@@ -1,4 +1,4 @@
-# Alyra-Projet-Final
+# Alyra-Projet-Final (Eusko)
 
 ## Stack technique
 - Frontend : NextJS + Wagmi + RainbowKit
