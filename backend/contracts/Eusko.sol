@@ -125,6 +125,7 @@ contract Eusko is ERC20, Ownable {
      * @dev Clears the merchant's balance and reduces the total reserve.
      */
     function claimFunds() external {
+        require(merchantRegistry[msg.sender], "Caller is not a merchant");
         uint256 balance = merchantBalances[msg.sender];
         require(balance > 0, "No balance to claim");
 
