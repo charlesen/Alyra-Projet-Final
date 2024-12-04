@@ -12,9 +12,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @notice Un système de jetons pour récompenser les bénévoles avec des jetons Eusko (EUS), adossés à l'EURC.
 ///         L'Eusko peut être émis en échange d'EURC et ne peut être dépensé qu'avec des commerçants approuvés.
 contract Eusko is ERC20, Ownable, ReentrancyGuard {
-    /// @dev Adresse du contrat EURC sur Sepolia
-    address public constant EURC_ADDRESS =
-        0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4;
     IERC20 public eurcToken;
 
     /// @dev Suit le total des euros en réserve adossés aux jetons.
@@ -83,11 +80,17 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
 
     /**
      * @dev Initialise le contrat en définissant le nom et le symbole du jeton, et en initialisant l'EURC.
-     * @notice Initialise le jeton Eusko avec une réserve totale en euros de 0.
+     * @param eurcAddress L'adresse du contrat EURC à utiliser.
      */
-    constructor() ERC20("Eusko", "EUS") Ownable(msg.sender) {
-        eurcToken = IERC20(EURC_ADDRESS);
+    constructor(address eurcAddress) ERC20("Eusko", "EUS") Ownable(msg.sender) {
+        require(eurcAddress != address(0), "EURC address cannot be zero");
+        eurcToken = IERC20(eurcAddress);
         totalEurosInReserve = 0;
+    }
+
+    // Redéfinition du nombre de décimales à 6 pour correspondre à l'EURC
+    function decimals() public pure override returns (uint8) {
+        return 6;
     }
 
     /**
@@ -189,7 +192,7 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
      * @notice Réclame les fonds équivalents en euros pour le solde d'un commerçant.
      * @dev Efface le solde du commerçant et réduit la réserve totale.
      */
-    function claimFunds() external {
+    function claimFunds() external nonReentrant {
         require(merchantRegistry[msg.sender], "Caller is not a merchant");
         uint256 balance = merchantBalances[msg.sender];
         require(balance > 0, "No balance to claim");
