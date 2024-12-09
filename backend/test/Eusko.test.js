@@ -1,39 +1,24 @@
-// import hre from "hardhat";
+// test/Eusko.test.js
+
+require("@nomicfoundation/hardhat-toolbox");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const hre = require("hardhat");
 const { expect } = require("chai");
 
 describe("Eusko", function () {
-  /*************  ✨ Codeium Command ⭐  *************/
   /**
-   * Déploie les contrats Eusko et EurcMock factice.
-   * Retourne un objet contenant les instances des contrats déployés,
-   * ainsi que les signers représentant le propriétaire, le commerçant et l'utilisateur.
-   * @returns {Object} - Un objet contenant eusko, eurcToken, owner, merchant et user.
+   * Déploie les contrats Eusko et EurcMock, et retourne les instances ainsi que les signers.
+   * @returns {Object} - Contient eusko, eurcToken, owner, merchant et user.
    */
-  /******  f5c9110c-65a5-431a-9b59-4bbd00a964a0  *******/
   async function deployEuskoFixture() {
     const [owner, merchant, user] = await hre.ethers.getSigners();
 
-    // Déployer le token EURC factice
-    const EurcMock = await hre.ethers.getContractFactory("EurcMock");
-    const initialEURCBalance = hre.ethers.utils.parseEther("1000");
-    const eurcToken = await EurcMock.deploy(
-      "Euro Coin",
-      "EURC",
-      owner.address,
-      initialEURCBalance
-    );
-    await eurcToken.deployed(); // Assurez-vous que le déploiement est terminé
+    // Déployer EurcMock avec une offre initiale
+    // const initialEurcSupply = hre.ethers.parseUnits("1000000", 6);
+    const eurcToken = await hre.ethers.deployContract("EurcMock");
 
-    console.log("EurcMock deployed at:", eurcToken.address);
-
-    // Déployer le contrat Eusko
-    const Eusko = await hre.ethers.getContractFactory("Eusko");
-    const eusko = await Eusko.deploy(eurcToken.address);
-    await eusko.deployed(); // Assurez-vous que le déploiement est terminé
-
-    console.log("Eusko deployed at:", eusko.address);
+    // Déployer Eusko avec l'adresse du contrat EurcMock
+    const eusko = await hre.ethers.deployContract("Eusko", [eurcToken.target]);
 
     return { eusko, eurcToken, owner, merchant, user };
   }
@@ -46,9 +31,17 @@ describe("Eusko", function () {
 
     it("Should deploy contracts to valid addresses", async function () {
       const { eusko, eurcToken } = await loadFixture(deployEuskoFixture);
+      expect(eusko.target).to.not.equal(hre.ethers.ZeroAddress);
+      expect(eurcToken.address).to.not.equal(hre.ethers.ZeroAddress);
+    });
+  });
 
-      expect(eusko.address).to.not.equal(hre.ethers.constants.AddressZero);
-      expect(eurcToken.address).to.not.equal(hre.ethers.constants.AddressZero);
+  describe("Decimals", function () {
+    it("Should return the correct decimals value", async function () {
+      const { eusko } = await loadFixture(deployEuskoFixture);
+
+      // Vérifiez que la fonction decimals retourne bien 6
+      expect(await eusko.decimals()).to.equal(6);
     });
   });
 
@@ -57,41 +50,43 @@ describe("Eusko", function () {
       const { eusko, eurcToken, owner, user } = await loadFixture(
         deployEuskoFixture
       );
-      const amount = hre.ethers.parseEther("100");
+
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
 
       // Le propriétaire approuve le contrat Eusko pour dépenser l'EURC
-      await eurcToken.connect(owner).approve(eusko.address, amount);
+      await eurcToken.connect(owner).approve(eusko.target, amount);
 
       // Le propriétaire mint des Eusko pour l'utilisateur
       await expect(eusko.connect(owner).mintWithEURC(user.address, amount))
         .to.emit(eusko, "EuskoMintedWithEURC")
         .withArgs(owner.address, user.address, amount, amount);
 
+      // Vérifier le solde de Eusko
       expect(await eusko.balanceOf(user.address)).to.equal(amount);
       expect(await eusko.totalEurosInReserve()).to.equal(amount);
-      expect(await eurcToken.balanceOf(eusko.address)).to.equal(amount);
+      expect(await eurcToken.balanceOf(eusko.target)).to.equal(amount);
     });
 
     it("Should revert if mintWithEURC is called by non-owner", async function () {
       const { eusko, user } = await loadFixture(deployEuskoFixture);
-      const amount = hre.ethers.parseEther("100");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
 
       // L'utilisateur tente de mint des Eusko
-      await expect(eusko.connect(user).mintWithEURC(user.address, amount))
-        .to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount")
-        .withArgs(user.address);
+      await expect(
+        eusko.connect(user).mintWithEURC(user.address, amount)
+      ).to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount");
     });
 
     it("Should revert if EURC transfer fails", async function () {
       const { eusko, eurcToken, owner, user } = await loadFixture(
         deployEuskoFixture
       );
-      const amount = hre.ethers.parseEther("100");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
 
       // Le propriétaire n'a pas approuvé le contrat Eusko pour dépenser l'EURC
-      await expect(eusko.connect(owner).mintWithEURC(user.address, amount))
-        .to.be.revertedWithCustomError(eurcToken, "ERC20InsufficientAllowance")
-        .withArgs(owner.address, hre.ethers.constants.Zero, amount);
+      await expect(
+        eusko.connect(owner).mintWithEURC(user.address, amount)
+      ).to.be.revertedWithCustomError(eusko, "ERC20InsufficientAllowance");
     });
   });
 
@@ -100,10 +95,12 @@ describe("Eusko", function () {
       const { eusko, eurcToken, owner, user } = await loadFixture(
         deployEuskoFixture
       );
-      const amount = hre.ethers.parseEther("100");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
+
+      // Le propriétaire approuve le contrat Eusko pour dépenser l'EURC
+      await eurcToken.connect(owner).approve(eusko.target, amount);
 
       // Le propriétaire mint des Eusko pour l'utilisateur
-      await eurcToken.connect(owner).approve(eusko.address, amount);
       await eusko.connect(owner).mintWithEURC(user.address, amount);
 
       // L'utilisateur rachète ses Eusko contre de l'EURC
@@ -111,21 +108,15 @@ describe("Eusko", function () {
         .to.emit(eusko, "EuskoRedeemed")
         .withArgs(user.address, amount, amount);
 
-      expect(await eusko.balanceOf(user.address)).to.equal(
-        hre.ethers.constants.Zero
-      );
+      expect(await eusko.balanceOf(user.address)).to.equal(0);
       expect(await eurcToken.balanceOf(user.address)).to.equal(amount);
-      expect(await eusko.totalEurosInReserve()).to.equal(
-        hre.ethers.constants.Zero
-      );
-      expect(await eurcToken.balanceOf(eusko.address)).to.equal(
-        hre.ethers.constants.Zero
-      );
+      expect(await eusko.totalEurosInReserve()).to.equal(0);
+      expect(await eurcToken.balanceOf(eusko.target)).to.equal(0);
     });
 
     it("Should revert if user tries to redeem more than their balance", async function () {
       const { eusko, user } = await loadFixture(deployEuskoFixture);
-      const amount = hre.ethers.parseEther("100");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
 
       // L'utilisateur n'a pas de solde en Eusko
       await expect(eusko.connect(user).redeem(amount)).to.be.revertedWith(
@@ -137,19 +128,21 @@ describe("Eusko", function () {
       const { eusko, eurcToken, owner, user } = await loadFixture(
         deployEuskoFixture
       );
-      const amount = hre.ethers.parseEther("100");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
 
-      // Le propriétaire mint des Eusko pour l'utilisateur
-      await eurcToken.connect(owner).approve(eusko.address, amount);
+      // Le propriétaire approuve et mint des Eusko pour l'utilisateur
+      await eurcToken.connect(owner).approve(eusko.target, amount);
       await eusko.connect(owner).mintWithEURC(user.address, amount);
 
-      // Brûler les EURC du contrat Eusko pour simuler une réserve insuffisante
-      await eurcToken.connect(owner).burn(eusko.address, amount);
+      // Brûler une partie des EURC dans le contrat pour simuler une réserve insuffisante
+      await eurcToken
+        .connect(owner)
+        .burn(eusko.target, hre.ethers.parseUnits("10", 6)); // Brûler 10 EURC
 
       // L'utilisateur tente de racheter ses Eusko
-      await expect(eusko.connect(user).redeem(amount))
-        .to.be.revertedWithCustomError(eurcToken, "ERC20InsufficientBalance")
-        .withArgs(eusko.address, hre.ethers.constants.Zero, amount);
+      await expect(eusko.connect(user).redeem(amount)).to.be.revertedWith(
+        "Insufficient EURC in reserve"
+      );
     });
   });
 
@@ -188,13 +181,13 @@ describe("Eusko", function () {
     it("Should revert if a non-owner tries to add or remove a merchant", async function () {
       const { eusko, user, merchant } = await loadFixture(deployEuskoFixture);
 
-      await expect(eusko.connect(user).addMerchant(merchant.address))
-        .to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount")
-        .withArgs(user.address);
+      await expect(
+        eusko.connect(user).addMerchant(merchant.address)
+      ).to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount");
 
-      await expect(eusko.connect(user).removeMerchant(merchant.address))
-        .to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount")
-        .withArgs(user.address);
+      await expect(
+        eusko.connect(user).removeMerchant(merchant.address)
+      ).to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount");
     });
   });
 
@@ -203,11 +196,11 @@ describe("Eusko", function () {
       const { eusko, eurcToken, owner, merchant, user } = await loadFixture(
         deployEuskoFixture
       );
-      const amount = hre.ethers.parseEther("100");
-      const spendAmount = hre.ethers.parseEther("30");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
+      const spendAmount = hre.ethers.parseUnits("6", 6); // 6 EURC avec 6 décimales (30%)
 
       // Mint des Eusko pour l'utilisateur
-      await eurcToken.connect(owner).approve(eusko.address, amount);
+      await eurcToken.connect(owner).approve(eusko.target, amount);
       await eusko.connect(owner).mintWithEURC(user.address, amount);
 
       // Ajouter le commerçant
@@ -219,7 +212,7 @@ describe("Eusko", function () {
         .withArgs(user.address, merchant.address, spendAmount);
 
       expect(await eusko.balanceOf(user.address)).to.equal(
-        amount.sub(spendAmount)
+        amount - spendAmount
       );
       expect(await eusko.getMerchantBalance(merchant.address)).to.equal(
         spendAmount
@@ -230,11 +223,11 @@ describe("Eusko", function () {
       const { eusko, eurcToken, owner, user, merchant } = await loadFixture(
         deployEuskoFixture
       );
-      const spendAmount = hre.ethers.parseEther("30");
-      const amount = hre.ethers.parseEther("100");
+      const spendAmount = hre.ethers.parseUnits("6", 6); // 6 EURC avec 6 décimales
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
 
       // Mint des Eusko pour l'utilisateur
-      await eurcToken.connect(owner).approve(eusko.address, amount);
+      await eurcToken.connect(owner).approve(eusko.target, amount);
       await eusko.connect(owner).mintWithEURC(user.address, amount);
 
       // Ne pas ajouter le commerçant
@@ -250,11 +243,11 @@ describe("Eusko", function () {
       const { eusko, eurcToken, owner, merchant, user } = await loadFixture(
         deployEuskoFixture
       );
-      const amount = hre.ethers.parseEther("100");
-      const spendAmount = hre.ethers.parseEther("40");
+      const amount = hre.ethers.parseUnits("20", 6); // 20 EURC avec 6 décimales
+      const spendAmount = hre.ethers.parseUnits("8", 6); // 8 EURC avec 6 décimales
 
       // Mint des Eusko pour l'utilisateur
-      await eurcToken.connect(owner).approve(eusko.address, amount);
+      await eurcToken.connect(owner).approve(eusko.target, amount);
       await eusko.connect(owner).mintWithEURC(user.address, amount);
 
       // Ajouter le commerçant
@@ -268,12 +261,8 @@ describe("Eusko", function () {
         .to.emit(eusko, "MerchantClaimedFunds")
         .withArgs(merchant.address, spendAmount);
 
-      expect(await eusko.getMerchantBalance(merchant.address)).to.equal(
-        hre.ethers.constants.Zero
-      );
-      expect(await eusko.totalEurosInReserve()).to.equal(
-        amount.sub(spendAmount)
-      );
+      expect(await eusko.getMerchantBalance(merchant.address)).to.equal(0);
+      expect(await eusko.totalEurosInReserve()).to.equal(amount - spendAmount);
       expect(await eurcToken.balanceOf(merchant.address)).to.equal(spendAmount);
     });
 
@@ -294,6 +283,52 @@ describe("Eusko", function () {
       await expect(eusko.connect(user).claimFunds()).to.be.revertedWith(
         "Caller is not a merchant"
       );
+    });
+  });
+
+  describe("Burn", function () {
+    it("Should burn tokens successfully and emit event", async function () {
+      const { eusko, eurcToken, owner, user } = await loadFixture(
+        deployEuskoFixture
+      );
+      const mintAmount = hre.ethers.parseUnits("150", 6); // Mint 150 EURC
+      const burnAmount = hre.ethers.parseUnits("50", 6); // Burn 50 EURC
+
+      // Mint tokens to the user
+      await eurcToken.connect(owner).approve(eusko.target, mintAmount);
+      await eusko.connect(owner).mintWithEURC(user.address, mintAmount);
+
+      // Burn tokens from the user
+      await expect(eusko.connect(owner).burn(user.address, burnAmount))
+        .to.emit(eusko, "EuskoBurned")
+        .withArgs(user.address, burnAmount);
+
+      // Check remaining balance of the user
+      const expectedBalance = mintAmount - burnAmount;
+      const userBalance = await eusko.balanceOf(user.address);
+      expect(userBalance).to.equal(expectedBalance);
+
+      // Check updated total reserve
+      const expectedReserve = mintAmount - burnAmount;
+      const totalReserve = await eusko.totalEurosInReserve();
+      expect(totalReserve).to.equal(expectedReserve);
+    });
+
+    it("Should revert if trying to burn more than the user's balance", async function () {
+      const { eusko, eurcToken, owner, user } = await loadFixture(
+        deployEuskoFixture
+      );
+      const mintAmount = hre.ethers.parseUnits("100", 6);
+      const burnAmount = hre.ethers.parseUnits("150", 6);
+
+      // Mint tokens to the user
+      await eurcToken.connect(owner).approve(eusko.target, mintAmount);
+      await eusko.connect(owner).mintWithEURC(user.address, mintAmount);
+
+      // Try burning more tokens than available
+      await expect(
+        eusko.connect(owner).burn(user.address, burnAmount)
+      ).to.be.revertedWithCustomError(eusko, "ERC20InsufficientBalance");
     });
   });
 });

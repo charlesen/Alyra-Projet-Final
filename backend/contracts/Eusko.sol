@@ -88,7 +88,11 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
         totalEurosInReserve = 0;
     }
 
-    // Redéfinition du nombre de décimales à 6 pour correspondre à l'EURC
+    /**
+     * @notice Redéfinit le nombre de décimales utilisées par le token Eusko.
+     * @dev Aligne le nombre de décimales du token Eusko sur celui de l'EURC, qui est de 6 décimales.
+     * @return Le nombre de décimales du token Eusko, c'est-à-dire 6.
+     */
     function decimals() public pure override returns (uint8) {
         return 6;
     }
