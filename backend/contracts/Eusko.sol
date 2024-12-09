@@ -23,6 +23,15 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
     /// @dev Suit les soldes des commerçants en Eusko.
     mapping(address => uint256) private merchantBalances;
 
+    /// @dev Mapping des adresses autorisées (inclut le propriétaire).
+    mapping(address => bool) private authorizedAccounts;
+
+    /// @notice Émis lorsqu'une nouvelle adresse est ajoutée comme autorisée.
+    event AuthorizedAccountAdded(address indexed account);
+
+    /// @notice Émis lorsqu'une adresse est retirée de la liste des autorisés.
+    event AuthorizedAccountRemoved(address indexed account);
+
     /// @notice Émis lorsque des jetons Eusko sont mintés.
     /// @param to L'adresse qui a reçu les jetons.
     /// @param amount Le nombre de jetons mintés.
@@ -78,6 +87,12 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
         uint256 eurcAmount
     );
 
+    /// @notice Modificateur pour limiter l'accès aux fonctions autorisées.
+    modifier onlyAuthorized() {
+        _checkAuthorization();
+        _;
+    }
+
     /**
      * @dev Initialise le contrat en définissant le nom et le symbole du jeton, et en initialisant l'EURC.
      * @param eurcAddress L'adresse du contrat EURC à utiliser.
@@ -89,65 +104,90 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Redéfinit le nombre de décimales utilisées par le token Eusko.
-     * @dev Aligne le nombre de décimales du token Eusko sur celui de l'EURC, qui est de 6 décimales.
-     * @return Le nombre de décimales du token Eusko, c'est-à-dire 6.
+     * @dev Vérifie si l'appelant est autorisé (propriétaire ou adresse autorisée).
      */
-    function decimals() public pure override returns (uint8) {
-        return 6;
+    function _checkAuthorization() internal view {
+        if (owner() != _msgSender() && !authorizedAccounts[_msgSender()]) {
+            revert OwnableUnauthorizedAccount(_msgSender());
+        }
+    }
+
+    function addAuthorizedAccount(address _account) external onlyAuthorized {
+        require(_account != address(0), "Invalid address");
+        require(!authorizedAccounts[_account], "Account already authorized");
+        authorizedAccounts[_account] = true;
+        emit AuthorizedAccountAdded(_account);
+    }
+
+    function removeAuthorizedAccount(address _account) external onlyAuthorized {
+        require(_account != address(0), "Invalid address");
+        require(authorizedAccounts[_account], "Account not authorized");
+        authorizedAccounts[_account] = false;
+        emit AuthorizedAccountRemoved(_account);
+    }
+
+    function isAuthorizedAccount(
+        address _account
+    ) external view returns (bool) {
+        return owner() == _account || authorizedAccounts[_account];
     }
 
     /**
      * @notice Mint des jetons Eusko en échange d'EURC.
      * @dev Seul le propriétaire peut appeler cette fonction pour mint des jetons pour un utilisateur spécifique.
-     * @param recipient L'adresse qui recevra les jetons Eusko.
-     * @param eurcAmount Le montant d'EURC déposé.
+     * @param _recipient L'adresse qui recevra les jetons Eusko.
+     * @param _eurcAmount Le montant d'EURC déposé.
      */
     function mintWithEURC(
-        address recipient,
-        uint256 eurcAmount
-    ) external onlyOwner nonReentrant {
-        require(eurcAmount > 0, "EURC amount must be greater than zero");
+        address _recipient,
+        uint256 _eurcAmount
+    ) external onlyAuthorized nonReentrant {
+        require(_eurcAmount > 0, "EURC amount must be greater than zero");
 
         // Transfert de l'EURC du propriétaire vers le contrat
         bool success = eurcToken.transferFrom(
             msg.sender,
             address(this),
-            eurcAmount
+            _eurcAmount
         );
         require(success, "EURC transfer failed");
 
         // Mint des jetons Eusko à l'adresse spécifiée
-        _mint(recipient, eurcAmount);
-        totalEurosInReserve += eurcAmount;
+        _mint(_recipient, _eurcAmount);
+        totalEurosInReserve += _eurcAmount;
 
-        emit EuskoMintedWithEURC(msg.sender, recipient, eurcAmount, eurcAmount);
+        emit EuskoMintedWithEURC(
+            msg.sender,
+            _recipient,
+            _eurcAmount,
+            _eurcAmount
+        );
     }
 
     /**
      * @notice Rachète des jetons Eusko contre de l'EURC.
      * @dev L'utilisateur doit avoir un solde suffisant en Eusko.
-     * @param euskoAmount Le montant d'Eusko à racheter.
+     * @param _euskoAmount Le montant d'Eusko à racheter.
      */
-    function redeem(uint256 euskoAmount) external nonReentrant {
+    function redeem(uint256 _euskoAmount) external nonReentrant {
         require(
-            balanceOf(msg.sender) >= euskoAmount,
+            balanceOf(msg.sender) >= _euskoAmount,
             "Insufficient Eusko balance"
         );
         require(
-            eurcToken.balanceOf(address(this)) >= euskoAmount,
+            eurcToken.balanceOf(address(this)) >= _euskoAmount,
             "Insufficient EURC in reserve"
         );
 
         // Brûler les jetons Eusko de l'utilisateur
-        _burn(msg.sender, euskoAmount);
-        totalEurosInReserve -= euskoAmount;
+        _burn(msg.sender, _euskoAmount);
+        totalEurosInReserve -= _euskoAmount;
 
         // Transfert de l'EURC à l'utilisateur
-        bool success = eurcToken.transfer(msg.sender, euskoAmount);
+        bool success = eurcToken.transfer(msg.sender, _euskoAmount);
         require(success, "EURC transfer failed");
 
-        emit EuskoRedeemed(msg.sender, euskoAmount, euskoAmount);
+        emit EuskoRedeemed(msg.sender, _euskoAmount, _euskoAmount);
     }
 
     /**
@@ -155,7 +195,7 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
      * @dev Seul le propriétaire du contrat peut appeler cette fonction.
      * @param _merchant L'adresse du commerçant à approuver.
      */
-    function addMerchant(address _merchant) external onlyOwner {
+    function addMerchant(address _merchant) external onlyAuthorized {
         require(!merchantRegistry[_merchant], "Merchant already approved");
         merchantRegistry[_merchant] = true;
         emit MerchantAdded(_merchant);
@@ -166,7 +206,7 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
      * @dev Seul le propriétaire du contrat peut appeler cette fonction.
      * @param _merchant L'adresse du commerçant à supprimer.
      */
-    function removeMerchant(address _merchant) external onlyOwner {
+    function removeMerchant(address _merchant) external onlyAuthorized {
         require(merchantRegistry[_merchant], "Merchant not approved");
         merchantRegistry[_merchant] = false;
         emit MerchantRemoved(_merchant);
@@ -245,9 +285,18 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
      * @param _from L'adresse depuis laquelle les jetons seront brûlés.
      * @param _amount Le montant de jetons à brûler.
      */
-    function burn(address _from, uint256 _amount) external onlyOwner {
+    function burn(address _from, uint256 _amount) external onlyAuthorized {
         _burn(_from, _amount);
         totalEurosInReserve -= _amount;
         emit EuskoBurned(_from, _amount);
+    }
+
+    /**
+     * @notice Redéfinit le nombre de décimales utilisées par le token Eusko.
+     * @dev Aligne le nombre de décimales du token Eusko sur celui de l'EURC, qui est de 6 décimales.
+     * @return Le nombre de décimales du token Eusko, c'est-à-dire 6.
+     */
+    function decimals() public pure override returns (uint8) {
+        return 6;
     }
 }
