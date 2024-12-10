@@ -11,7 +11,9 @@ describe("Eusko", function () {
    * @returns {Object} - Contient eusko, eurcToken, owner, merchant et user.
    */
   async function deployEuskoFixture() {
-    const [owner, merchant, user] = await hre.ethers.getSigners();
+    // const [owner, merchant, user] = await hre.ethers.getSigners();
+    const [owner, merchant, user, volunteer1, volunteer2] =
+      await hre.ethers.getSigners();
 
     // Déployer EurcMock avec une offre initiale
     // const initialEurcSupply = hre.ethers.parseUnits("1000000", 6);
@@ -20,7 +22,8 @@ describe("Eusko", function () {
     // Déployer Eusko avec l'adresse du contrat EurcMock
     const eusko = await hre.ethers.deployContract("Eusko", [eurcToken.target]);
 
-    return { eusko, eurcToken, owner, merchant, user };
+    // return { eusko, eurcToken, owner, merchant, user };
+    return { eusko, eurcToken, owner, merchant, user, volunteer1, volunteer2 };
   }
 
   describe("Deployment", function () {
@@ -34,9 +37,7 @@ describe("Eusko", function () {
       expect(eusko.target).to.not.equal(hre.ethers.ZeroAddress);
       expect(eurcToken.address).to.not.equal(hre.ethers.ZeroAddress);
     });
-  });
 
-  describe("Decimals", function () {
     it("Should return the correct decimals value", async function () {
       const { eusko } = await loadFixture(deployEuskoFixture);
 
@@ -87,6 +88,90 @@ describe("Eusko", function () {
       await expect(
         eusko.connect(owner).mintWithEURC(user.address, amount)
       ).to.be.revertedWithCustomError(eusko, "ERC20InsufficientAllowance");
+    });
+  });
+
+  describe("Volunteer Acts", function () {
+    it("Should register a volunteer act and reward Eusko", async function () {
+      const { eusko, volunteer1 } = await loadFixture(deployEuskoFixture);
+      const description = "Helped at the community center";
+      const reward = hre.ethers.parseUnits("50", 6); // 50 Eusko
+
+      // Effectuer la transaction
+      const tx = await eusko.registerAct(
+        volunteer1.address,
+        description,
+        reward
+      );
+
+      // Récupérer le bloc dans lequel la transaction a été incluse
+      const receipt = await tx.wait();
+      const block = await hre.ethers.provider.getBlock(receipt.blockNumber);
+      const timestamp = block.timestamp;
+
+      // Vérifier l'événement émis
+      await expect(tx)
+        .to.emit(eusko, "VolunteerActRegistered")
+        .withArgs(volunteer1.address, description, reward, timestamp);
+
+      // Vérifier les actes enregistrés
+      const acts = await eusko.getActs(volunteer1.address);
+      expect(acts.length).to.equal(1);
+      expect(acts[0].description).to.equal(description);
+      expect(acts[0].reward).to.equal(reward);
+
+      // Vérifier le solde du bénévole
+      const balance = await eusko.balanceOf(volunteer1.address);
+      expect(balance).to.equal(reward);
+    });
+
+    it("Should retrieve acts correctly for multiple volunteers", async function () {
+      const { eusko, volunteer1, volunteer2 } = await loadFixture(
+        deployEuskoFixture
+      );
+
+      await eusko.registerAct(
+        volunteer1.address,
+        "Act 1",
+        hre.ethers.parseUnits("20", 6)
+      );
+      await eusko.registerAct(
+        volunteer1.address,
+        "Act 2",
+        hre.ethers.parseUnits("30", 6)
+      );
+      await eusko.registerAct(
+        volunteer2.address,
+        "Act 3",
+        hre.ethers.parseUnits("40", 6)
+      );
+
+      const acts1 = await eusko.getActs(volunteer1.address);
+      expect(acts1.length).to.equal(2);
+      expect(acts1[0].description).to.equal("Act 1");
+      expect(acts1[1].description).to.equal("Act 2");
+
+      const acts2 = await eusko.getActs(volunteer2.address);
+      expect(acts2.length).to.equal(1);
+      expect(acts2[0].description).to.equal("Act 3");
+    });
+
+    it("Should revert if registering an act with invalid address", async function () {
+      const { eusko } = await loadFixture(deployEuskoFixture);
+      await expect(
+        eusko.registerAct(
+          hre.ethers.ZeroAddress,
+          "Invalid Act",
+          hre.ethers.parseUnits("50", 6)
+        )
+      ).to.be.revertedWith("Invalid volunteer address");
+    });
+
+    it("Should revert if registering an act with zero reward", async function () {
+      const { eusko, volunteer1 } = await loadFixture(deployEuskoFixture);
+      await expect(
+        eusko.registerAct(volunteer1.address, "No reward", 0)
+      ).to.be.revertedWith("Reward must be greater than zero");
     });
   });
 
@@ -329,6 +414,67 @@ describe("Eusko", function () {
       await expect(
         eusko.connect(owner).burn(user.address, burnAmount)
       ).to.be.revertedWithCustomError(eusko, "ERC20InsufficientBalance");
+    });
+  });
+
+  describe("Authorized Accounts Management", function () {
+    it("Should add an authorized account and emit an event", async function () {
+      const { eusko, owner, user } = await loadFixture(deployEuskoFixture);
+
+      await expect(eusko.connect(owner).addAuthorizedAccount(user.address))
+        .to.emit(eusko, "AuthorizedAccountAdded")
+        .withArgs(user.address);
+
+      expect(await eusko.isAuthorizedAccount(user.address)).to.be.true;
+    });
+
+    it("Should remove an authorized account and emit an event", async function () {
+      const { eusko, owner, user } = await loadFixture(deployEuskoFixture);
+
+      // Add the account first
+      await eusko.connect(owner).addAuthorizedAccount(user.address);
+
+      // Remove the account
+      await expect(eusko.connect(owner).removeAuthorizedAccount(user.address))
+        .to.emit(eusko, "AuthorizedAccountRemoved")
+        .withArgs(user.address);
+
+      expect(await eusko.isAuthorizedAccount(user.address)).to.be.false;
+    });
+
+    it("Should revert if trying to remove an account that is not authorized", async function () {
+      const { eusko, owner, user } = await loadFixture(deployEuskoFixture);
+
+      await expect(
+        eusko.connect(owner).removeAuthorizedAccount(user.address)
+      ).to.be.revertedWith("Account not authorized");
+    });
+
+    it("Should revert if trying to remove an account with invalid address", async function () {
+      const { eusko, owner } = await loadFixture(deployEuskoFixture);
+
+      await expect(
+        eusko.connect(owner).removeAuthorizedAccount(hre.ethers.ZeroAddress)
+      ).to.be.revertedWith("Invalid address");
+    });
+
+    it("Should return true for the owner in isAuthorizedAccount", async function () {
+      const { eusko, owner } = await loadFixture(deployEuskoFixture);
+
+      expect(await eusko.isAuthorizedAccount(owner.address)).to.be.true;
+    });
+
+    it("Should return false for an unauthorized account in isAuthorizedAccount", async function () {
+      const { eusko, user } = await loadFixture(deployEuskoFixture);
+
+      expect(await eusko.isAuthorizedAccount(user.address)).to.be.false;
+    });
+
+    it("Should return true for an authorized account in isAuthorizedAccount", async function () {
+      const { eusko, owner, user } = await loadFixture(deployEuskoFixture);
+
+      await eusko.connect(owner).addAuthorizedAccount(user.address);
+      expect(await eusko.isAuthorizedAccount(user.address)).to.be.true;
     });
   });
 });

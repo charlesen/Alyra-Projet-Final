@@ -17,6 +17,14 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
     /// @dev Suit le total des euros en réserve adossés aux jetons.
     uint256 public totalEurosInReserve;
 
+    /// @dev Mapping pour suivre les actes de bénévolat
+    struct Act {
+        string description;
+        uint256 reward; // Récompense en Eusko
+        uint256 timestamp;
+    }
+    mapping(address => Act[]) private volunteerActs;
+
     /// @dev Mapping des commerçants approuvés.
     mapping(address => bool) private merchantRegistry;
 
@@ -49,6 +57,18 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
     /// @notice Émis lorsqu'un commerçant est supprimé.
     /// @param merchant L'adresse du commerçant supprimé.
     event MerchantRemoved(address indexed merchant);
+
+    /// @notice Émis lorsqu'un acte de volontariat est enregistré.
+    /// @param volunteer L'adresse du volontaire.
+    /// @param description La description du volontariat.
+    /// @param reward La reward du volontariat.
+    /// @param timestamp Le timestamp du volontariat.
+    event VolunteerActRegistered(
+        address indexed volunteer,
+        string description,
+        uint256 reward,
+        uint256 timestamp
+    );
 
     /// @notice Émis lorsque des jetons Eusko sont dépensés par un utilisateur.
     /// @param spender L'adresse de l'utilisateur qui dépense les jetons.
@@ -188,6 +208,49 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
         require(success, "EURC transfer failed");
 
         emit EuskoRedeemed(msg.sender, _euskoAmount, _euskoAmount);
+    }
+
+    /**
+     * @notice Enregistrement d'un nouvel acte de volontariat.
+     * @dev Seul le propriétaire du contrat peut appeler cette fonction.
+     * @param _volunteer L'adresse du volontaire.
+     * @param _description La description de l'acte.
+     * @param _reward Le montant de la rachat.
+     */
+    function registerAct(
+        address _volunteer,
+        string memory _description,
+        uint256 _reward
+    ) external onlyOwner {
+        require(_volunteer != address(0), "Invalid volunteer address");
+        require(_reward > 0, "Reward must be greater than zero");
+
+        // Ajouter l'acte au registre
+        volunteerActs[_volunteer].push(
+            Act({
+                description: _description,
+                reward: _reward,
+                timestamp: block.timestamp
+            })
+        );
+
+        // Récompenser le bénévole
+        _mint(_volunteer, _reward);
+
+        emit VolunteerActRegistered(
+            _volunteer,
+            _description,
+            _reward,
+            block.timestamp
+        );
+    }
+
+    /**
+     * @notice Obtient les actes d'un volontaire.
+     * @param _volunteer L'adresse du volontaire.
+     */
+    function getActs(address _volunteer) external view returns (Act[] memory) {
+        return volunteerActs[_volunteer];
     }
 
     /**
