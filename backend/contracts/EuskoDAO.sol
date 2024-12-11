@@ -3,10 +3,11 @@ pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./Authorizable.sol";
 
 /// @title Contrat de DAO Eusko avec gestion des récompenses NFT
 /// @notice Permet de créer des badges de récompense pour les bénévoles et de gérer la gouvernance.
-contract EuskoDAO is ERC1155, Ownable(msg.sender) {
+contract EuskoDAO is ERC1155, Authorizable {
     uint256 private _currentRewardId = 1; // Compteur pour les NFT (badges)
     uint256 public discountRate; // Pourcentage de réduction
 
@@ -66,7 +67,7 @@ contract EuskoDAO is ERC1155, Ownable(msg.sender) {
         address _to,
         string memory _metadata,
         bytes memory _data
-    ) external onlyOwner {
+    ) external onlyAuthorized {
         require(_to != address(0), "Invalid recipient address");
 
         _mint(_to, _currentRewardId, 1, _data);
@@ -83,7 +84,7 @@ contract EuskoDAO is ERC1155, Ownable(msg.sender) {
     function createProposal(
         string memory _description,
         uint256 _newRate
-    ) external onlyOwner {
+    ) external onlyAuthorized {
         require(_newRate <= 100, "Rate cannot exceed 100%");
 
         proposals[proposalCount] = Proposal({
@@ -123,7 +124,7 @@ contract EuskoDAO is ERC1155, Ownable(msg.sender) {
      * @notice Exécute une proposition.
      * @param _proposalId ID de la proposition.
      */
-    function executeProposal(uint256 _proposalId) external onlyOwner {
+    function executeProposal(uint256 _proposalId) external onlyAuthorized {
         Proposal storage proposal = proposals[_proposalId];
         require(!proposal.executed, "Proposal already executed");
         require(

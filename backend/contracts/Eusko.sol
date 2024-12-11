@@ -8,10 +8,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 // Importation pour interagir avec l'EURC (ERC20 standard)
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import "./Authorizable.sol";
+
 /// @title Contrat Stablecoin Eusko adossé à l'EURC
 /// @notice Un système de jetons pour récompenser les bénévoles avec des jetons Eusko (EUS), adossés à l'EURC.
 ///         L'Eusko peut être émis en échange d'EURC et ne peut être dépensé qu'avec des commerçants approuvés.
-contract Eusko is ERC20, Ownable, ReentrancyGuard {
+contract Eusko is ERC20, Authorizable, ReentrancyGuard {
     IERC20 public eurcToken;
 
     /// @dev Suit le total des euros en réserve adossés aux jetons.
@@ -30,15 +32,6 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
 
     /// @dev Suit les soldes des commerçants en Eusko.
     mapping(address => uint256) private merchantBalances;
-
-    /// @dev Mapping des adresses autorisées (inclut le propriétaire).
-    mapping(address => bool) private authorizedAccounts;
-
-    /// @notice Émis lorsqu'une nouvelle adresse est ajoutée comme autorisée.
-    event AuthorizedAccountAdded(address indexed account);
-
-    /// @notice Émis lorsqu'une adresse est retirée de la liste des autorisés.
-    event AuthorizedAccountRemoved(address indexed account);
 
     /// @notice Émis lorsque des jetons Eusko sont mintés.
     /// @param to L'adresse qui a reçu les jetons.
@@ -107,49 +100,14 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
         uint256 eurcAmount
     );
 
-    /// @notice Modificateur pour limiter l'accès aux fonctions autorisées.
-    modifier onlyAuthorized() {
-        _checkAuthorization();
-        _;
-    }
-
     /**
      * @dev Initialise le contrat en définissant le nom et le symbole du jeton, et en initialisant l'EURC.
      * @param eurcAddress L'adresse du contrat EURC à utiliser.
      */
-    constructor(address eurcAddress) ERC20("Eusko", "EUS") Ownable(msg.sender) {
+    constructor(address eurcAddress) ERC20("Eusko", "EUS") {
         require(eurcAddress != address(0), "EURC address cannot be zero");
         eurcToken = IERC20(eurcAddress);
         totalEurosInReserve = 0;
-    }
-
-    /**
-     * @dev Vérifie si l'appelant est autorisé (propriétaire ou adresse autorisée).
-     */
-    function _checkAuthorization() internal view {
-        if (owner() != _msgSender() && !authorizedAccounts[_msgSender()]) {
-            revert OwnableUnauthorizedAccount(_msgSender());
-        }
-    }
-
-    function addAuthorizedAccount(address _account) external onlyAuthorized {
-        require(_account != address(0), "Invalid address");
-        require(!authorizedAccounts[_account], "Account already authorized");
-        authorizedAccounts[_account] = true;
-        emit AuthorizedAccountAdded(_account);
-    }
-
-    function removeAuthorizedAccount(address _account) external onlyAuthorized {
-        require(_account != address(0), "Invalid address");
-        require(authorizedAccounts[_account], "Account not authorized");
-        authorizedAccounts[_account] = false;
-        emit AuthorizedAccountRemoved(_account);
-    }
-
-    function isAuthorizedAccount(
-        address _account
-    ) external view returns (bool) {
-        return owner() == _account || authorizedAccounts[_account];
     }
 
     /**
@@ -203,7 +161,7 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
         _burn(msg.sender, _euskoAmount);
         totalEurosInReserve -= _euskoAmount;
 
-        // Transfert de l'EURC à l'utilisateur
+        // Transfert de l'EURC à l'utilisateur (équivalence 1EURC = 1Eusko)
         bool success = eurcToken.transfer(msg.sender, _euskoAmount);
         require(success, "EURC transfer failed");
 
@@ -221,7 +179,7 @@ contract Eusko is ERC20, Ownable, ReentrancyGuard {
         address _volunteer,
         string memory _description,
         uint256 _reward
-    ) external onlyOwner {
+    ) external onlyAuthorized {
         require(_volunteer != address(0), "Invalid volunteer address");
         require(_reward > 0, "Reward must be greater than zero");
 
