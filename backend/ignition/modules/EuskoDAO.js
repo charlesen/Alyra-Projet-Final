@@ -4,7 +4,7 @@
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
 const INITIAL_RATE = 10;
-module.exports = buildModule("EuskoDAOModule", (m) => {
+module.exports = buildModule("EuskoDAO", (m) => {
   const initialRate = m.getParameter("INITIAL_RATE", INITIAL_RATE);
   const EuskoDAO = m.contract("EuskoDAO", [initialRate]);
 

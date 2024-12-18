@@ -20,10 +20,9 @@ abstract contract Authorizable is Ownable {
     constructor() Ownable(msg.sender) {}
 
     function _checkAuthorization() internal view {
-        require(
-            owner() == msg.sender || _authorizedAccounts[msg.sender],
-            "Not authorized"
-        );
+        if (owner() != _msgSender() && !_authorizedAccounts[_msgSender()]) {
+            revert OwnableUnauthorizedAccount(_msgSender());
+        }
     }
 
     function addAuthorizedAccount(address _account) external onlyOwner {
