@@ -32,16 +32,16 @@ Prérequis
 Adresses des Contrats
 
 - Contrat EURC : 0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4
-- Contrat Eusko : 0x8589CDb7862F5344578A04CcfC4F02911753fc8F
+- Contrat Eusko : 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1
 
 ## Mint de nouveaux tokens EUSKO
 
 ### 1. Approuver le Contrat Eusko pour Dépenser vos EURC
 
 - Accédez au contrat EURC sur Etherscan.
-- Dans l'onglet "Write Contract", connectez votre Metamask.
+- Dans l'onglet "Write as Proxy", connectez votre Metamask.
 - Trouvez la fonction approve et renseignez :
-  - \_spender : 0x8589CDb7862F5344578A04CcfC4F02911753fc8F
+  - \_spender : 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1
   - \_value : Montant d'EURC à approuver (par exemple, pour 30 EURC avec 6 décimales : 30000000)
   - Confirmez la transaction dans Metamask.
 
@@ -55,7 +55,7 @@ Adresses des Contrats
 
 ### 3. Mint des Tokens Eusko
 
-:note: :warning: Seul le propriétaire du contrat Eusko peut appeler mintWithEURC.
+:note: :warning: Seuls les propriétaire du contrat Eusko peuvent appeler mintWithEURC.
 
 - Accédez au contrat Eusko sur Etherscan.
 - Dans l'onglet "Write Contract", connectez votre Metamask.
@@ -68,7 +68,7 @@ Adresses des Contrats
 
 - Dans Metamask, cliquez sur "Importer des tokens".
 - Sélectionnez "Token personnalisé" et renseignez :
-  - Adresse du contrat : 0x8589CDb7862F5344578A04CcfC4F02911753fc8F
+  - Adresse du contrat : 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1
   - Symbole : EUS
   - Décimales : 6
 - Importez le token pour voir votre solde en Eusko.

@@ -19,19 +19,32 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
     /// @dev Suit le total des euros en réserve adossés aux jetons.
     uint256 public totalEurosInReserve;
 
+    address public reserve; // Adresse de la réserve
+
     /// @dev Mapping pour suivre les actes de bénévolat
     struct Act {
-        string description;
-        uint256 reward; // Récompense en Eusko
-        uint256 timestamp;
+        address organism; // Adresse de l'organisme : Permet de garder une trace de l'organisme qui a validé ou proposé l'acte.
+        string description; // Description de l'acte
+        uint256 reward; // Stocke la récompense en Eusko, alignée sur la tokenomics
+        uint256 timestamp; // Timestamp de réalisation
     }
-    mapping(address => Act[]) private volunteerActs;
+
+    // Mapping pour chaque benevole
+    mapping(address => Act[]) public volunteerActs;
 
     /// @dev Mapping des commerçants approuvés.
     mapping(address => bool) private merchantRegistry;
 
     /// @dev Suit les soldes des commerçants en Eusko.
     mapping(address => uint256) private merchantBalances;
+
+    /// @notice Émis lorsque l'adresse de la réserve est mise à jour.
+    /// @param oldReserve L'ancienne adresse de la réserve.
+    /// @param newReserve La nouvelle adresse de la réserve.
+    event ReserveUpdated(
+        address indexed oldReserve,
+        address indexed newReserve
+    );
 
     /// @notice Émis lorsque des jetons Eusko sont mintés.
     /// @param to L'adresse qui a reçu les jetons.
@@ -53,11 +66,13 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
 
     /// @notice Émis lorsqu'un acte de volontariat est enregistré.
     /// @param volunteer L'adresse du volontaire.
+    /// @param organism L'adresse de l'organisme.
     /// @param description La description du volontariat.
     /// @param reward La reward du volontariat.
     /// @param timestamp Le timestamp du volontariat.
     event VolunteerActRegistered(
         address indexed volunteer,
+        address indexed organism,
         string description,
         uint256 reward,
         uint256 timestamp
@@ -100,14 +115,44 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
         uint256 eurcAmount
     );
 
+    /// @notice Émis lorsqu'un acte expiré est supprimé.
+    /// @param volunteer L'adresse du bénévole.
+    /// @param description La description de l'acte expiré.
+    /// @param reward Le montant de la récompense associée.
+    /// @param timestamp Le timestamp de l'acte expiré.
+    event ExpiredActRemoved(
+        address indexed volunteer,
+        string description,
+        uint256 reward,
+        uint256 timestamp
+    );
+
     /**
      * @dev Initialise le contrat en définissant le nom et le symbole du jeton, et en initialisant l'EURC.
      * @param eurcAddress L'adresse du contrat EURC à utiliser.
      */
     constructor(address eurcAddress) ERC20("Eusko", "EUS") {
         require(eurcAddress != address(0), "EURC address cannot be zero");
+
+        // Initialisation de l'EURC
         eurcToken = IERC20(eurcAddress);
+
+        // Initialisation de la réserve
         totalEurosInReserve = 0;
+
+        // La réserve par défaut est celle du propriétaire du contrat
+        reserve = msg.sender;
+    }
+
+    /**
+     * @notice Met à jour l'adresse de la réserve.
+     * @param _newReserve La nouvelle adresse de la réserve.
+     */
+    function updateReserve(address _newReserve) external onlyAuthorized {
+        require(_newReserve != address(0), "Invalid new reserve address");
+        address oldReserve = reserve;
+        reserve = _newReserve;
+        emit ReserveUpdated(oldReserve, _newReserve);
     }
 
     /**
@@ -169,34 +214,42 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
     }
 
     /**
-     * @notice Enregistrement d'un nouvel acte de volontariat.
-     * @dev Seul le propriétaire du contrat peut appeler cette fonction.
-     * @param _volunteer L'adresse du volontaire.
-     * @param _description La description de l'acte.
-     * @param _reward Le montant de la rachat.
+     * @notice Enregistre un acte de bénévolat et transfère des tokens depuis la réserve.
+     * @param _volunteer Adresse du bénévole.
+     * @param _organism Adresse de l'organisme.
+     * @param _description Description de l'acte.
+     * @param _reward Récompense pour l'acte.
      */
     function registerAct(
         address _volunteer,
+        address _organism,
         string memory _description,
         uint256 _reward
-    ) external onlyAuthorized {
+    ) external nonReentrant onlyAuthorized {
         require(_volunteer != address(0), "Invalid volunteer address");
+        require(_organism != address(0), "Invalid organism address");
+        require(bytes(_description).length > 0, "Description cannot be empty");
         require(_reward > 0, "Reward must be greater than zero");
 
-        // Ajouter l'acte au registre
+        // Vérifie que la réserve a suffisamment de fonds
+        require(balanceOf(reserve) >= _reward, "Insufficient reserve balance");
+
+        // Ajoute l'acte au registre
         volunteerActs[_volunteer].push(
             Act({
+                organism: _organism,
                 description: _description,
                 reward: _reward,
                 timestamp: block.timestamp
             })
         );
 
-        // Récompenser le bénévole
-        _mint(_volunteer, _reward);
+        // Transfére des fonds depuis la réserve vers le bénévole
+        _transfer(reserve, _volunteer, _reward);
 
         emit VolunteerActRegistered(
             _volunteer,
+            _organism,
             _description,
             _reward,
             block.timestamp
@@ -204,10 +257,13 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
     }
 
     /**
-     * @notice Obtient les actes d'un volontaire.
-     * @param _volunteer L'adresse du volontaire.
+     * @notice Récupère les actes d'un bénévole.
+     * @param _volunteer Adresse du bénévole.
+     * @return Liste des actes de bénévolat effectués par le bénévole.
      */
-    function getActs(address _volunteer) external view returns (Act[] memory) {
+    function getActsByVolunteer(
+        address _volunteer
+    ) external view returns (Act[] memory) {
         return volunteerActs[_volunteer];
     }
 
@@ -239,7 +295,7 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
      * @param _merchant L'adresse du commerçant qui reçoit les jetons.
      * @param _amount Le montant de jetons à dépenser.
      */
-    function spend(address _merchant, uint256 _amount) external {
+    function spend(address _merchant, uint256 _amount) external nonReentrant {
         require(merchantRegistry[_merchant], "Not an approved merchant");
         require(_amount > 0, "Amount must be greater than zero");
 
@@ -298,6 +354,43 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
         address _merchant
     ) external view returns (uint256) {
         return merchantBalances[_merchant];
+    }
+
+    /**
+     * @notice Supprime les actes expirés d'un bénévole.
+     * @param _volunteer L'adresse du bénévole.
+     */
+    function removeExpiredActs(
+        address _volunteer
+    ) external nonReentrant onlyAuthorized {
+        Act[] storage acts = volunteerActs[_volunteer];
+        uint256 currentTime = block.timestamp;
+        uint256 totalToRevoke = 0;
+
+        for (uint256 i = 0; i < acts.length; i++) {
+            if (currentTime - acts[i].timestamp > 365 days) {
+                // Accumule la récompense à révoquer
+                totalToRevoke += acts[i].reward;
+
+                // Émission de l'événement
+                emit ExpiredActRemoved(
+                    _volunteer,
+                    acts[i].description,
+                    acts[i].reward,
+                    acts[i].timestamp
+                );
+
+                // Supprime l'acte expiré
+                acts[i] = acts[acts.length - 1]; // Remplace par le dernier acte
+                acts.pop(); // Réduction de la taille du tableau
+                i--; // Reduction de l'index pour évaluer le nouvel élément
+            }
+        }
+
+        // Réduction de la balance en Eusko de l'utilisateur
+        if (totalToRevoke > 0) {
+            _transfer(_volunteer, reserve, totalToRevoke);
+        }
     }
 
     /**
