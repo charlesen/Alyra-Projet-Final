@@ -31,3 +31,6 @@ module.exports = {
 // Doc deploiement :
 // npx hardhat ignition deploy ignition/modules/Eusko.js --network sepolia
 // npx hardhat ignition deploy ignition/modules/EuskoDAO.js --network sepolia
+
+// Vérification contrat :
+// npx hardhat verify --network sepolia 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1 "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
