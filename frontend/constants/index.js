@@ -1,5 +1,5 @@
 export const EUSKO_TOKEN_ADDRESS = "0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1";
-export const EUSKO_TOKEN_ABI = [
+export const EUSKO_ABI = [
   {
     inputs: [
       {
