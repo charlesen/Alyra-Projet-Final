@@ -5,7 +5,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export default function Header() {
     return (
-        <header className="bg-white dark:bg-gray-900 shadow-sm">
+        <header className="bg-white dark:bg-gray-900 shadow-sm sm:text-center">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between py-4 md:py-2">
                     {/* Logo ou Nom du Projet */}
@@ -19,37 +19,49 @@ export default function Header() {
                     </div>
 
                     {/* Menu Principal */}
-                    <nav className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-8 mb-4 md:mb-0">
-                        <Link
-                            href="/"
-                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
-                        >
-                            Accueil
-                        </Link>
-                        <Link
-                            href="/mint"
-                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
-                        >
-                            Mint
-                        </Link>
-                        <Link
-                            href="/volunteers"
-                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
-                        >
-                            Bénévoles
-                        </Link>
-                        <Link
-                            href="/merchants"
-                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
-                        >
-                            Commerçants
-                        </Link>
-                        <Link
-                            href="/dao"
-                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
-                        >
-                            DAO
-                        </Link>
+                    <nav className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+                        <ul className="flex flex-wrap -mb-px">
+                            <li className="me-2">
+                                <Link
+                                    href="/"
+                                    className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                >
+                                    Accueil
+                                </Link>
+                            </li>
+                            <li className="me-2">
+                                <Link
+                                    href="/mint"
+                                    className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                >
+                                    Mint
+                                </Link>
+                            </li>
+                            <li className="me-2">
+                                <Link
+                                    href="/volunteers"
+                                    className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                >
+                                    Bénévoles
+                                </Link>
+                            </li>
+                            <li className="me-2">
+                                <Link
+                                    href="/merchants"
+                                    className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                >
+                                    Commerçants
+                                </Link>
+                            </li>
+                            <li className="me-2">
+                                <Link
+                                    href="/dao"
+                                    className="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                >
+                                    DAO
+                                </Link>
+                            </li>
+                        </ul>
                     </nav>
 
                     {/* Connect Wallet Button */}
