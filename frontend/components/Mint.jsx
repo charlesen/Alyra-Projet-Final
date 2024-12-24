@@ -15,7 +15,7 @@ export default function Mint() {
     const { address: userAddress, isConnected } = useAccount();
     const { toast } = useToast();
 
-    // Lire si l'utilisateur est autorisé
+    // 1) Vérifier si l'utilisateur est autorisé
     const {
         data: isAuthData,
         isLoading: isAuthLoading,
@@ -29,7 +29,7 @@ export default function Mint() {
     });
     const isAuthorized = isAuthData || false;
 
-    // Lire l'adresse de la réserve
+    // 2) Récupérer l'adresse de la réserve
     const {
         data: reserveData,
         isLoading: isReserveLoading,
@@ -38,40 +38,29 @@ export default function Mint() {
         address: EUSKO_TOKEN_ADDRESS,
         abi: EUSKO_ABI,
         functionName: "reserve",
-        enabled: true,
     });
-    // Convertir en string (ou laisser sous forme d'adresse)
     const reserveAddr = reserveData || "";
 
-    // État pour le champ "recipient"
-    const [recipient, setRecipient] = useState("");
+    // 3) Champs pour saisir le montant
     const [eurcAmount, setEurcAmount] = useState("");
     const [lastHash, setLastHash] = useState("");
 
-    // Hook écriture
+    // 4) Hook écriture
     const { data: txHash, error, isPending, writeContract } = useWriteContract();
 
-    // Hook réception confirmation
+    // 5) Confirmation de la transaction
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
         hash: lastHash || txHash,
     });
 
-    // Mettre par défaut l'adresse de la réserve si la lecture est prête
-    // et si l'utilisateur n'a jamais saisi manuellement.
-    useEffect(() => {
-        if (!recipient && reserveAddr && !isReserveLoading && !isReserveError) {
-            setRecipient(reserveAddr);
-        }
-    }, [recipient, reserveAddr, isReserveLoading, isReserveError]);
-
-    // Mémoriser la txHash
+    // 6) Mise à jour du hash si reçu
     useEffect(() => {
         if (txHash) {
             setLastHash(txHash);
         }
     }, [txHash]);
 
-    // Sur succès
+    // 7) Sur succès
     useEffect(() => {
         if (isSuccess && lastHash) {
             toast({
@@ -79,42 +68,37 @@ export default function Mint() {
                 description: "Les jetons Eusko ont été créés avec succès !",
                 className: "bg-lime-200",
             });
-            setRecipient(reserveAddr); // On remet la valeur par défaut
             setEurcAmount("");
             setLastHash("");
         }
-    }, [isSuccess, lastHash, toast, reserveAddr]);
+    }, [isSuccess, lastHash, toast]);
 
-    // Bouton "Minter"
+    // 8) Bouton "Minter"
     const handleMint = async () => {
-        // Si le champ est vide ou que l’utilisateur l’a effacé,
-        // on réutilise l’adresse de la réserve
-        const finalRecipient = recipient || reserveAddr;
-        const finalEurcAmount = eurcAmount.trim();
-
-        if (!finalRecipient || !finalEurcAmount) {
+        if (!eurcAmount.trim()) {
             toast({
                 title: "Champs manquants",
-                description: "Veuillez indiquer le destinataire et le montant",
+                description: "Veuillez saisir le montant à minter",
                 className: "bg-red-200",
             });
             return;
         }
+        const parsedAmount = BigInt(Math.floor(parseFloat(eurcAmount) * 1e6));
 
-        const parsedAmount = BigInt(Math.floor(parseFloat(finalEurcAmount) * 1e6));
         try {
             await writeContract({
                 address: EUSKO_TOKEN_ADDRESS,
                 abi: EUSKO_ABI,
                 functionName: "mintWithEURC",
-                args: [finalRecipient, parsedAmount],
+                // On force `reserveAddr` en destinataire
+                args: [reserveAddr, parsedAmount],
             });
         } catch (err) {
             console.error("Mint error:", err);
         }
     };
 
-    // Rendu
+    // 9) Rendu ou "guard clauses"
     if (!isConnected) {
         return (
             <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4">
@@ -136,7 +120,7 @@ export default function Mint() {
             </div>
         );
     }
-    if (isReserveError) {
+    if (isReserveError || !reserveAddr) {
         return (
             <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4">
                 Impossible de récupérer l'adresse de la réserve.
@@ -144,29 +128,31 @@ export default function Mint() {
         );
     }
 
+    // 10) Affichage principal
     return (
         <div className="max-w-lg mx-auto bg-gray-50 p-6 rounded-md shadow">
-            <h3 className="text-xl font-semibold mb-4 text-indigo-600">Mint des Eusko</h3>
+            <h3 className="text-xl font-semibold mb-4 text-indigo-600">
+                Mint des Eusko
+            </h3>
 
-            {/* Champ destinataire */}
+            {/* Champ "Réserve" affiché en lecture seule */}
             <div className="mb-4">
                 <label
                     htmlFor="recipient"
                     className="block text-sm font-medium text-gray-700"
                 >
-                    Adresse du destinataire
+                    Adresse destinataire (réserve)
                 </label>
                 <input
                     type="text"
                     id="recipient"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                    placeholder="0x1234..."
-                    value={recipient}
-                    onChange={(e) => setRecipient(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-gray-100 text-gray-500"
+                    value={reserveAddr}
+                    readOnly
                 />
             </div>
 
-            {/* Champ montant */}
+            {/* Montant en EURC/EUS (6 décimales) */}
             <div className="mb-4">
                 <label
                     htmlFor="eurcAmount"
@@ -188,7 +174,6 @@ export default function Mint() {
                 </p>
             </div>
 
-            {/* Bouton "Minter" */}
             <Button
                 variant="default"
                 onClick={handleMint}
