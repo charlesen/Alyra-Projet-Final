@@ -8,7 +8,7 @@ import {
 
 const NotConnected = () => {
     return (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="w-full text-center">
             <ExclamationTriangleIcon className="h-4 w-4" />
             <AlertTitle>Warning</AlertTitle>
             <AlertDescription>

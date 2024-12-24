@@ -101,28 +101,28 @@ export default function Mint() {
     // 9) Rendu ou "guard clauses"
     if (!isConnected) {
         return (
-            <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4">
+            <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4 text-center">
                 Vous devez connecter votre wallet pour procéder au mint.
             </div>
         );
     }
     if (isAuthLoading || isReserveLoading) {
         return (
-            <div className="p-4 bg-gray-50 rounded-md text-gray-800 mt-4">
+            <div className="p-4 bg-gray-50 rounded-md text-gray-800 mt-4 text-center">
                 Vérification en cours...
             </div>
         );
     }
     if (isAuthError || !isAuthorized) {
         return (
-            <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4">
+            <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4 text-center">
                 Vous n'êtes pas autorisé à utiliser cette fonctionnalité.
             </div>
         );
     }
     if (isReserveError || !reserveAddr) {
         return (
-            <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4">
+            <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4 text-center">
                 Impossible de récupérer l'adresse de la réserve.
             </div>
         );
