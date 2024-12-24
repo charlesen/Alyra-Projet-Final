@@ -75,8 +75,8 @@ export default function Mint() {
     useEffect(() => {
         if (isSuccess && lastHash) {
             toast({
-                title: "Mint success",
-                description: "The Eusko tokens have been minted successfully!",
+                title: "Mint effectué",
+                description: "Les jetons Eusko ont été créés avec succès !",
                 className: "bg-lime-200",
             });
             setRecipient(reserveAddr); // On remet la valeur par défaut
@@ -94,8 +94,8 @@ export default function Mint() {
 
         if (!finalRecipient || !finalEurcAmount) {
             toast({
-                title: "Missing fields",
-                description: "Please enter both recipient and amount",
+                title: "Champs manquants",
+                description: "Veuillez indiquer le destinataire et le montant",
                 className: "bg-red-200",
             });
             return;
@@ -114,7 +114,7 @@ export default function Mint() {
         }
     };
 
-    // ---- Rendu ----
+    // Rendu
     if (!isConnected) {
         return (
             <div className="p-4 bg-red-50 rounded-md text-red-800 mt-4">
