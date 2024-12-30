@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "status": "finished",
+    "status": "registeredOnChain",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 5,
@@ -12,9 +12,9 @@
   },
   {
     "id": 2,
-    "status": "readyOnChain",
+    "status": "registeredOnChain",
     "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
-    "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
+    "volunteer": "0x64380947fcaaE64B6F755bF47555e9E119D217de",
     "reward": 10,
     "title": "Collecte de vêtements",
     "location": "Maison de la solidarité",
@@ -23,9 +23,9 @@
   },
   {
     "id": 3,
-    "status": "readyOnChain",
+    "status": "new",
     "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
-    "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
+    "volunteer": "",
     "reward": 10,
     "title": "Soutien scolaire",
     "location": "Centre social B",
@@ -57,7 +57,7 @@
   {
     "id": 6,
     "status": "inProgress",
-    "organism": "0xbBbb2222bBbb2222bBbb2222bBbb2222bBbb2222",
+    "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 10,
     "title": "Réaménagement d'un local associatif",
@@ -68,7 +68,7 @@
   {
     "id": 7,
     "status": "inProgress",
-    "organism": "0xccCC3333ccCC3333ccCC3333ccCC3333ccCC3333",
+    "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 5,
     "title": "Atelier d'initiation numérique",
@@ -79,7 +79,7 @@
   {
     "id": 8,
     "status": "new",
-    "organism": "0xdddd4444dddd4444dddd4444dddd4444dddd4444",
+    "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "",
     "reward": 5,
     "title": "Ateliers de cuisine solidaire",
@@ -90,7 +90,7 @@
   {
     "id": 9,
     "status": "new",
-    "organism": "0xeeee5555eeee5555eeee5555eeee5555eeee5555",
+    "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "",
     "reward": 10,
     "title": "Sensibilisation au recyclage",
@@ -101,7 +101,7 @@
   {
     "id": 10,
     "status": "new",
-    "organism": "0xffff6666ffff6666ffff6666ffff6666ffff6666",
+    "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
     "volunteer": "",
     "reward": 10,
     "title": "Collecte de jouets",
@@ -112,7 +112,7 @@
   {
     "id": 11,
     "status": "new",
-    "organism": "0x8888aaaa8888aaaa8888aaaa8888aaaa8888aaaa",
+    "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
     "volunteer": "",
     "reward": 10,
     "title": "Animation musicale",
@@ -123,7 +123,7 @@
   {
     "id": 12,
     "status": "new",
-    "organism": "0x9999bbbb9999bbbb9999bbbb9999bbbb9999bbbb",
+    "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
     "volunteer": "",
     "reward": 5,
     "title": "Ramassage de déchets",

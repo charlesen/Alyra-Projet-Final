@@ -34,6 +34,12 @@ Adresses des Contrats
 - Contrat EURC : 0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4
 - Contrat Eusko : 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1
 
+## Vérification du contrat sur Sepolia
+
+```bash
+npx hardhat verify --network sepolia 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1 "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
+```
+
 ## Mint de nouveaux tokens EUSKO
 
 ### 1. Approuver le Contrat Eusko pour Dépenser vos EURC
