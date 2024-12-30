@@ -11,7 +11,12 @@ export function cn(...inputs) {
  * @param {number} actId - ID de l'acte à mettre à jour.
  * @param {string} newStatus - Nouveau statut à attribuer.
  */
-export const updateActStatus = async (setActs, actId, newStatus) => {
+export const updateActStatus = async (
+  setActs,
+  actId,
+  newStatus,
+  txHash = null
+) => {
   try {
     const response = await fetch("/api/volunteering", {
       method: "PUT",
@@ -31,7 +36,7 @@ export const updateActStatus = async (setActs, actId, newStatus) => {
     const data = await response.json();
     setActs((prevActs) =>
       prevActs.map((act) =>
-        act.id === actId ? { ...act, status: newStatus } : act
+        act.id === actId ? { ...act, status: newStatus, txHash } : act
       )
     );
 

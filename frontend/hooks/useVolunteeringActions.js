@@ -27,7 +27,7 @@ export const useVolunteeringActions = ({
   // Hook pour écrire dans le contrat (registerAct)
   const {
     writeContract: writeRegisterAct,
-    data: registerTxData,
+    data: txHash,
     error: registerError,
     isPending: isRegistering,
   } = useWriteContract();
@@ -38,7 +38,7 @@ export const useVolunteeringActions = ({
     isSuccess: isRegisterSuccess,
     error: waitRegisterError,
   } = useWaitForTransactionReceipt({
-    hash: registerTxData,
+    hash: txHash,
   });
 
   // Effet pour gérer le succès ou l'échec de la transaction
@@ -46,10 +46,10 @@ export const useVolunteeringActions = ({
     if (isRegisterSuccess) {
       console.log(
         "Transaction confirmée, mise à jour de l'acte via l'API.",
-        registerTxData
+        txHash
       );
       // Mettre à jour le statut via l'API
-      updateActStatus(setActs, pendingActId, "registeredOnChain")
+      updateActStatus(setActs, pendingActId, "registeredOnChain", txHash)
         .then(() => {
           toast({
             title: "Inscription réussie",
@@ -92,7 +92,7 @@ export const useVolunteeringActions = ({
     waitRegisterError,
     setActs,
     toast,
-    registerTxData,
+    txHash,
   ]);
 
   // Fonction pour enregistrer l'acte sur la blockchain

@@ -8,7 +8,8 @@
     "title": "Distribution de paniers repas",
     "location": "Local associatif A",
     "date": "2024-06-10",
-    "description": "Aider à distribuer des paniers repas chaque semaine aux familles dans le besoin."
+    "description": "Aider à distribuer des paniers repas chaque semaine aux familles dans le besoin.",
+    "txHash": "0xfaea0a69db0b19a68323b6e1adfa9cf60cb012788eba283cf35209f55d15dd79"
   },
   {
     "id": 2,
@@ -19,7 +20,8 @@
     "title": "Collecte de vêtements",
     "location": "Maison de la solidarité",
     "date": "2024-07-01",
-    "description": "Trier et organiser la collecte de vêtements pour enfants dans le quartier."
+    "description": "Trier et organiser la collecte de vêtements pour enfants dans le quartier.",
+    "txHash": "0x697cd4ce15a8bb330ecdba1f0e232aa1648749944e603d3546d41dcd63245ee0"
   },
   {
     "id": 3,
