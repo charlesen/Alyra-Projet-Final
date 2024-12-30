@@ -239,7 +239,7 @@ export const handleRegisterOnChain = async (
   }
   if (act.status !== "readyOnChain") {
     alert(
-      "L'acte doit être 'readyOnChain' pour être enregistré sur la blockchain."
+      "L'acte doit être 'Prêt pour la blockchain' pour être enregistré sur la blockchain."
     );
     return;
   }

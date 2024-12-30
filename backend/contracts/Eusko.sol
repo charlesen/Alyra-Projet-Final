@@ -32,7 +32,7 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
     // Mapping pour chaque benevole
     mapping(address => Act[]) public volunteerActs;
 
-    /// @dev Mapping des commerçants approuvés.
+    /// @dev Mapping des commerçants/organismes approuvés.
     mapping(address => bool) private merchantRegistry;
 
     /// @dev Suit les soldes des commerçants en Eusko.

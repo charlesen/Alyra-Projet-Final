@@ -41,6 +41,9 @@ export default function VolunteeringList() {
         args: [address || "0x0000000000000000000000000000000000000000"],
         enabled: !!address,
     });
+
+    console.log(`isAuthorizedData:${address} : `, isAuthorizedData);
+
     const isAuthorized = isAuthorizedData ?? false;
 
     // Hook écriture (pour les futures interactions on-chain)
@@ -93,10 +96,16 @@ export default function VolunteeringList() {
             if (!isConnected) {
                 return false; // Les autres statuts ne sont visibles que pour les utilisateurs connectés
             }
-            if (isMerchant) {
+
+            if (isAuthorized) {
+                // Pour les personnes autorisées on affiche tous les status selon l'onglet actif
+                return act.status === activeTab;
+            }
+            else if (isMerchant) {
                 // Pour les Organismes : afficher les actes qu'ils ont publiés avec le statut correspondant
                 return act.status === activeTab && act.organism.toLowerCase() === address.toLowerCase();
-            } else {
+            }
+            else {
                 // Pour les Bénévoles : afficher les actes qui leur sont assignés avec le statut correspondant
                 return act.status === activeTab && act.volunteer.toLowerCase() === address.toLowerCase();
             }

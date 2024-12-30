@@ -13,14 +13,15 @@ export default function ActCard({ act, actions, isMerchant, isAuthorized }) {
             <p className="text-sm text-gray-500 mb-2">
                 <strong>Date :</strong> {act.date}
             </p>
-            <p className="text-gray-700 flex-grow mb-4">{act.description}</p>
 
             {/* Afficher la recompense uniquement si le statut est finished, readyOnChain ou registeredOnChain */}
             {["finished", "readyOnChain", "registeredOnChain"].includes(act.status) && (
                 <p className="text-sm text-gray-500 mb-2">
-                    <strong>Récompense :</strong> {act.reward}
+                    <strong>Récompense :</strong> {act.reward} EUS
                 </p>
             )}
+            <p className="text-gray-700 flex-grow mb-4">{act.description}</p>
+
 
             {/* Boutons d'actions selon le statut et le rôle */}
             <div className="flex flex-col gap-2">
@@ -81,7 +82,7 @@ export default function ActCard({ act, actions, isMerchant, isAuthorized }) {
                 {/* Indicateur final si "registeredOnChain" */}
                 {act.status === "registeredOnChain" && (
                     <p className="mt-2 text-sm text-green-800 font-semibold">
-                        ✅ Cet acte est déjà inscrit sur la blockchain.
+                        Cet acte est déjà inscrit sur la blockchain.
                     </p>
                 )}
             </div>
