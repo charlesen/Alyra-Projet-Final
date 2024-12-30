@@ -58,13 +58,13 @@ function EuskoBalance({ address }) {
     const reserveBalanceFormatted = reserve ? formatBalance(reserveBalanceData) : null;
 
     return (
-        <div className="bg-white sm:py-32 lg:text-center">
+        <div className="sm:py-32 lg:text-center">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
                     <div className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
                         {/* Solde Utilisateur */}
                         <div className="relative pl-16">
-                            <dt className="text-base font-semibold text-gray-900">
+                            <dt className="font-semibold text-white">
                                 <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600">
                                     <svg className="h-6 w-6 text-white" fill="none"
                                         viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
@@ -73,7 +73,7 @@ function EuskoBalance({ address }) {
                                 </div>
                                 Votre solde Eusko
                             </dt>
-                            <dd className="mt-2 text-base text-gray-600">
+                            <dd className="mt-2 text-white">
                                 {userBalanceFormatted} EUS
                             </dd>
                         </div>
@@ -81,7 +81,7 @@ function EuskoBalance({ address }) {
                         {/* Solde Réserve (si disponible) */}
                         {reserve && (
                             <div className="relative pl-16">
-                                <dt className="text-base font-semibold text-gray-900">
+                                <dt className="text-base font-semibold text-white">
                                     <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600">
                                         <svg className="h-6 w-6 text-white" fill="none"
                                             viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
@@ -90,7 +90,7 @@ function EuskoBalance({ address }) {
                                     </div>
                                     Solde de la réserve
                                 </dt>
-                                <dd className="mt-2 text-base text-gray-600">
+                                <dd className="mt-2 text-white">
                                     {reserveBalanceFormatted} EUS
                                 </dd>
                             </div>

@@ -4,6 +4,12 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, #3e424e 0%, #595e6d 100%);
+  color: #fefefe;
+}
+
+p {
+  color: #fefefe;
 }
 
 @layer base {

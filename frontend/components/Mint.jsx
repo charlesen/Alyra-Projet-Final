@@ -130,7 +130,7 @@ export default function Mint() {
 
     // 10) Affichage principal
     return (
-        <div className="max-w-lg mx-auto bg-gray-50 p-6 rounded-md shadow">
+        <div className="max-w-lg mx-auto p-6 rounded-md shadow">
             <h3 className="text-xl font-semibold mb-4 text-indigo-600">
                 Mint des Eusko
             </h3>
@@ -189,7 +189,7 @@ export default function Mint() {
                     {txHash && (
                         <Alert className="bg-blue-50 border border-blue-300 text-blue-800 px-4 py-3 rounded relative">
                             <AlertDescription>
-                                Transaction hash: {txHash}
+                                Hash de la transaction: {txHash}
                             </AlertDescription>
                         </Alert>
                     )}
