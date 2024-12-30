@@ -1,12 +1,12 @@
-// components/VolunteeringList.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { EUSKO_TOKEN_ADDRESS, EUSKO_ABI } from "@/constants";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+
+// Importer les sous-composants
+import ActCard from "@/components/ActCard";
 
 // Importer le hook personnalisé
 import { useVolunteeringActions } from "@/hooks/useVolunteeringActions";
@@ -49,11 +49,15 @@ export default function VolunteeringList() {
     const [acts, setActs] = useState([]);
     const [isLoadingLocal, setIsLoadingLocal] = useState(true);
 
-    // Charger la liste JSON au montage
+    // Charger la liste via l'API au montage
     useEffect(() => {
         async function loadData() {
             try {
-                const res = await fetch("/api/volunteering"); // Utiliser l'API
+                // TODO : Utiliser une véritable API
+                const res = await fetch("/api/volunteering");
+                if (!res.ok) {
+                    throw new Error("Erreur lors de la récupération des actes.");
+                }
                 const data = await res.json();
                 setActs(data);
             } catch (error) {
@@ -87,13 +91,19 @@ export default function VolunteeringList() {
             return act.status === "new"; // Afficher tous les actes "new"
         } else {
             if (!isConnected) {
-                return false; // Les autres statuts ne sont visibles que pour les bénévoles connectés
+                return false; // Les autres statuts ne sont visibles que pour les utilisateurs connectés
             }
-            return act.status === activeTab && act.volunteer.toLowerCase() === address.toLowerCase();
+            if (isMerchant) {
+                // Pour les Organismes : afficher les actes qu'ils ont publiés avec le statut correspondant
+                return act.status === activeTab && act.organism.toLowerCase() === address.toLowerCase();
+            } else {
+                // Pour les Bénévoles : afficher les actes qui leur sont assignés avec le statut correspondant
+                return act.status === activeTab && act.volunteer.toLowerCase() === address.toLowerCase();
+            }
         }
     });
 
-    // Utiliser le hook personnalisé pour obtenir les méthodes d'action
+    // Hook personnalisé pour obtenir les méthodes d'action
     const actions = useVolunteeringActions({
         address,
         isConnected,
@@ -120,7 +130,6 @@ export default function VolunteeringList() {
 
     return (
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
-            <h2 className="text-2xl font-bold mb-6 text-indigo-600">Opportunités de Bénévolat</h2>
 
             {/* Système d'onglets */}
             <div className="flex justify-center gap-4 mb-6 flex-wrap">
@@ -128,8 +137,8 @@ export default function VolunteeringList() {
                     <button
                         key={tab.key}
                         className={`px-4 py-2 rounded-md font-semibold ${activeTab === tab.key
-                                ? "bg-indigo-600 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                         onClick={() => setActiveTab(tab.key)}
                     >
@@ -144,86 +153,13 @@ export default function VolunteeringList() {
             ) : (
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {filteredActs.map((act) => (
-                        <div
+                        <ActCard
                             key={act.id}
-                            className="flex flex-col bg-white rounded-md shadow p-4 border border-gray-200"
-                        >
-                            <h3 className="text-xl font-bold text-indigo-700 mb-2">{act.title}</h3>
-                            <p className="text-sm text-gray-500 mb-1 break-all">
-                                <strong>Organisme :</strong> {act.organism}
-                            </p>
-                            <p className="text-sm text-gray-500 mb-1">
-                                <strong>Lieu :</strong> {act.location}
-                            </p>
-                            <p className="text-sm text-gray-500 mb-2">
-                                <strong>Date :</strong> {act.date}
-                            </p>
-                            <p className="text-gray-700 flex-grow mb-4">{act.description}</p>
-
-                            {/* Boutons d'actions selon le statut */}
-                            <div className="flex flex-col gap-2">
-                                {/* Bouton "Postuler" => new => inProgress */}
-                                {act.status === "new" && (
-                                    <button
-                                        onClick={() => actions.handleApply(act)}
-                                        className={`inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${isConnected
-                                                ? "bg-indigo-600 hover:bg-indigo-500"
-                                                : "bg-gray-400 cursor-not-allowed"
-                                            }`}
-                                        disabled={!isConnected}
-                                    >
-                                        {isConnected ? "Postuler" : "Connectez votre wallet"}
-                                    </button>
-                                )}
-
-                                {/* Bouton "Valider" => inProgress => validated */}
-                                {act.status === "inProgress" && (
-                                    <button
-                                        onClick={() => actions.handleValidate(act)}
-                                        className="inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-green-600 hover:bg-green-500"
-                                    >
-                                        Valider l'acte
-                                    </button>
-                                )}
-
-                                {/* Bouton "Terminer" => validated => finished */}
-                                {act.status === "validated" && (
-                                    <button
-                                        onClick={() => actions.handleFinish(act)}
-                                        className="inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-green-700 hover:bg-green-600"
-                                    >
-                                        Terminer l'acte
-                                    </button>
-                                )}
-
-                                {/* Bouton "Préparer on-chain" => finished => readyOnChain */}
-                                {act.status === "finished" && (
-                                    <button
-                                        onClick={() => actions.handlePrepareOnChain(act)}
-                                        className="inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-purple-600 hover:bg-purple-500"
-                                    >
-                                        Préparer l'acte on-chain
-                                    </button>
-                                )}
-
-                                {/* Bouton "Enregistrer on-chain" => readyOnChain => registeredOnChain */}
-                                {act.status === "readyOnChain" && (
-                                    <button
-                                        onClick={() => actions.handleRegisterOnChain(act)}
-                                        className="inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors bg-purple-800 hover:bg-purple-700"
-                                    >
-                                        Enregistrer on-chain
-                                    </button>
-                                )}
-
-                                {/* Indicateur final si "registeredOnChain" */}
-                                {act.status === "registeredOnChain" && (
-                                    <p className="mt-2 text-sm text-green-800 font-semibold">
-                                        ✅ Cet acte est déjà inscrit sur la blockchain.
-                                    </p>
-                                )}
-                            </div>
-                        </div>
+                            act={act}
+                            actions={actions}
+                            isMerchant={isMerchant}
+                            isAuthorized={isAuthorized}
+                        />
                     ))}
                 </div>
             )}

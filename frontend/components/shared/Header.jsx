@@ -14,7 +14,7 @@ export default function Header() {
                             href="/"
                             className="text-indigo-600 text-2xl font-bold hover:underline"
                         >
-                            Eusko Dapp
+                            Eusko3
                         </Link>
                     </div>
 

@@ -12,10 +12,10 @@ export default function Home() {
         <div className="mx-auto max-w-2xl text-center">
           <section className="text-center">
             <h2 className="text-3xl font-semibold text-indigo-600">
-              Bienvenue sur Eusko
+              Bienvenue sur Eusko3
             </h2>
             <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8">
-              Eusko est un stablecoin adossé à l’EURC, conçu pour valoriser le
+              Eusko3 est un stablecoin adossé à l’EURC, conçu pour valoriser le
               bénévolat et encourager le commerce local.
             </p>
             <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8">

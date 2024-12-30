@@ -1,5 +1,3 @@
-// src/utils/volunteeringActions.js
-
 /**
  * Met à jour le statut d'un acte via l'API.
  * @param {Function} setActs - Fonction pour mettre à jour l'état des actes.
@@ -199,7 +197,9 @@ export const handlePrepareOnChain = async (
     return;
   }
   if (act.status !== "finished") {
-    alert("L'acte doit être 'finished' pour être prêt pour la blockchain.");
+    alert(
+      "L'acte de benevolat doit être 'terminé' pour être prêt pour la blockchain."
+    );
     return;
   }
 

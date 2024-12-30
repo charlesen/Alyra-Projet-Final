@@ -6,8 +6,8 @@ import Layout from "@/components/shared/Layout";
 import "./globals.css";
 
 export const metadata = {
-  title: "Eusko Dapp",
-  description: "A simple People money by Alyra Eusko",
+  title: "Eusko3 Dapp",
+  description: "A simple People money by Alyra Eusko3",
 };
 
 export default function RootLayout({ children }) {
