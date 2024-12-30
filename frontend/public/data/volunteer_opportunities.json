@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "status": "readyOnChain",
+    "status": "registeredOnChain",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 5,
@@ -12,7 +12,7 @@
   },
   {
     "id": 2,
-    "status": "readyOnChain",
+    "status": "registeredOnChain",
     "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
     "volunteer": "0x64380947fcaaE64B6F755bF47555e9E119D217de",
     "reward": 10,

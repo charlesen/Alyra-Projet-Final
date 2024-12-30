@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { EUSKO_TOKEN_ADDRESS, EUSKO_ABI } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 
@@ -41,13 +41,7 @@ export default function VolunteeringList() {
         args: [address || "0x0000000000000000000000000000000000000000"],
         enabled: !!address,
     });
-
-    console.log(`isAuthorizedData:${address} : `, isAuthorizedData);
-
     const isAuthorized = isAuthorizedData ?? false;
-
-    // Hook écriture (pour les futures interactions on-chain)
-    const { writeContract } = useWriteContract();
 
     const [acts, setActs] = useState([]);
     const [isLoadingLocal, setIsLoadingLocal] = useState(true);
@@ -118,7 +112,6 @@ export default function VolunteeringList() {
         isConnected,
         isMerchant,
         isAuthorized,
-        writeContract,
         setActs,
         toast,
     });
@@ -139,7 +132,6 @@ export default function VolunteeringList() {
 
     return (
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
-
             {/* Système d'onglets */}
             <div className="flex justify-center gap-4 mb-6 flex-wrap">
                 {TABS.map((tab) => (

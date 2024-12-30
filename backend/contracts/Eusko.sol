@@ -167,7 +167,8 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
     ) external onlyAuthorized nonReentrant {
         require(_eurcAmount > 0, "EURC amount must be greater than zero");
 
-        // Transfert de l'EURC du propriétaire vers le contrat
+        // Transfert de l'EURC du minter (personnes authorisées dont le propriétaire du contrat) vers le contrat EURC
+        // On s'assure ainsi que pour chaque EUS minté, le contrat aura un solde d'EURC équivalent
         bool success = eurcToken.transferFrom(
             msg.sender,
             address(this),
