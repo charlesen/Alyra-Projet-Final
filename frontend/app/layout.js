@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <body>
+      <body className="bg-gradient-to-r from-slate-800 to-slate-700">
         <RainbowKitAndWagmiProvider>
           <Layout>{children}</Layout>
         </RainbowKitAndWagmiProvider>
