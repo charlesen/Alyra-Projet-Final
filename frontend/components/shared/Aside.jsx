@@ -20,7 +20,7 @@ export default function Aside() {
     };
 
     return (
-        <aside className="w-60 text-white flex flex-col border-r border-gray-200 bg-gray-800">
+        <aside className="w-60 text-white flex flex-col border-r border-gray-200">
             {/* Logo ou titre */}
             <div className="mb-6 pt-5 pb-2 text-center">
                 <h1 className="text-2xl font-bold">Eusko3</h1>
@@ -92,13 +92,22 @@ export default function Aside() {
                     </label>
                 </div>
 
-                {/* Exemple : un bouton Paramètres si besoin */}
+
                 <Link
                     className="flex items-center text-sm p-3 hover:bg-gray-700"
                     href="/settings"
                 >
                     <Cog6ToothIcon className="w-5 h-5 mr-2 shrink-0" />
                     Paramètres
+                </Link>
+                <Link
+                    className="flex items-center text-sm p-3 hover:bg-gray-700"
+                    href="/admin"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 w-5 h-5 mr-2 shrink-0">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                    Admin
                 </Link>
             </div>
         </aside>

@@ -131,7 +131,7 @@ export default function Mint() {
     // 10) Affichage principal
     return (
         <div className="max-w-lg mx-auto p-6 rounded-md shadow">
-            <h3 className="text-xl font-semibold mb-4 text-indigo-600">
+            <h3 className="text-xl font-semibold mb-4">
                 Mint des Eusko
             </h3>
 
@@ -139,7 +139,7 @@ export default function Mint() {
             <div className="mb-4">
                 <label
                     htmlFor="recipient"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium  text-white-700"
                 >
                     Adresse destinataire (réserve)
                 </label>
@@ -156,7 +156,7 @@ export default function Mint() {
             <div className="mb-4">
                 <label
                     htmlFor="eurcAmount"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium  text-white-700"
                 >
                     Montant EURC
                 </label>
@@ -169,7 +169,7 @@ export default function Mint() {
                     value={eurcAmount}
                     onChange={(e) => setEurcAmount(e.target.value)}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-white-500 mt-1">
                     Rappel : 1 EUS = 1 EURC, 6 décimales
                 </p>
             </div>
