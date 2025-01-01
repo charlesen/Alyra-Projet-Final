@@ -22,7 +22,7 @@ export default function Aside() {
     return (
         <aside className="w-60 text-white flex flex-col border-r border-gray-200">
             {/* Logo ou titre */}
-            <div className="mb-6 pt-5 pb-2 text-center">
+            <div className="mb-6 p-4">
                 <h1 className="text-2xl font-bold">Eusko3</h1>
             </div>
 
