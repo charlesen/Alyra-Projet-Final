@@ -86,7 +86,11 @@ export default function VolunteeringList() {
     const filteredActs = acts.filter((act) => {
         if (activeTab === "new") {
             return act.status === "new"; // Afficher tous les actes "new"
-        } else {
+        }
+        else if (activeTab === "registeredOnChain") {
+            return act.status === "registeredOnChain";
+        }
+        else {
             if (!isConnected) {
                 return false; // Les autres statuts ne sont visibles que pour les utilisateurs connectés
             }
