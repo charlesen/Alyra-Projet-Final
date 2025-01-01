@@ -33,7 +33,7 @@ export default function ReserveBalance() {
     }
 
     return (
-        <div className="p-4 rounded-md shadow text-white text-center">
+        <div className="p-4 rounded-md text-white text-center">
             <h3 className="text-lg font-semibold">Solde de la réserve</h3>
             <p className="text-2xl font-bold">{displayBalance} EUS</p>
         </div>

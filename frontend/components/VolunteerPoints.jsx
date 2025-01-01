@@ -49,9 +49,9 @@ export default function VolunteerPoints() {
     const displayPoints = totalPoints.toString();
 
     return (
-        <div className="my-4 p-4 bg-gray-100 rounded-md text-center">
-            <h3 className="text-xl font-semibold mb-2 text-gray-700">Mes points bénévolat</h3>
-            <p className="text-gray-800 text-2xl font-bold">
+        <div className="lg:text-center text-white">
+            <h3 className="font-semibold text-xl mb-2">Mes points de bénévolat</h3>
+            <p className="text-2xl font-bold">
                 {displayPoints} points
             </p>
         </div>

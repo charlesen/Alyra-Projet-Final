@@ -27,9 +27,11 @@ export default function GuaranteeFundBalance() {
     const displayBalance = balanceNumber.toFixed(2);
 
     return (
-        <div className="p-4 rounded-md shadow text-white text-center">
-            <h3 className="text-lg font-semibold">Fond de Garanti (EURC)</h3>
-            <p className="text-2xl font-bold">{displayBalance} EURC</p>
+        <div className="p-4 rounded-md text-white text-center">
+            <h3 className="text-lg font-semibold">Fond de Garanti</h3>
+            <p className="text-2xl font-bold">
+                {displayBalance} EURC
+            </p>
         </div>
     );
 }
