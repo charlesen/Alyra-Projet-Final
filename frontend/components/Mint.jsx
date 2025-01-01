@@ -108,7 +108,7 @@ export default function Mint() {
     }
     if (isAuthLoading || isReserveLoading) {
         return (
-            <div className="p-4 bg-gray-50 rounded-md text-gray-800 mt-4 text-center">
+            <div className="p-4 bg-gray-50 rounded-md text-neutral-900 mt-4 text-center">
                 Vérification en cours...
             </div>
         );
@@ -130,7 +130,7 @@ export default function Mint() {
 
     // 10) Affichage principal
     return (
-        <div className="max-w-lg mx-auto p-6 rounded-md shadow">
+        <div className="max-w-lg mx-auto p-6 rounded-md shadow text-white-700">
             <h3 className="text-xl font-semibold mb-4">
                 Mint des Eusko
             </h3>
@@ -139,24 +139,24 @@ export default function Mint() {
             <div className="mb-4">
                 <label
                     htmlFor="recipient"
-                    className="block text-sm font-medium  text-white-700"
+                    className="block text-sm font-medium"
                 >
                     Adresse destinataire (réserve)
                 </label>
                 <input
                     type="text"
                     id="recipient"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-gray-100 text-gray-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-gray-100 text-neutral-900"
                     value={reserveAddr}
                     readOnly
                 />
             </div>
 
             {/* Montant en EURC/EUS (6 décimales) */}
-            <div className="mb-4">
+            <div className="mb-4 text-white-700">
                 <label
                     htmlFor="eurcAmount"
-                    className="block text-sm font-medium  text-white-700"
+                    className="block text-sm font-medium"
                 >
                     Montant EURC
                 </label>
@@ -164,7 +164,7 @@ export default function Mint() {
                     type="number"
                     step="0.000001"
                     id="eurcAmount"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm text-neutral-900"
                     placeholder="10.0"
                     value={eurcAmount}
                     onChange={(e) => setEurcAmount(e.target.value)}
