@@ -130,7 +130,7 @@ export default function Mint() {
 
     // 10) Affichage principal
     return (
-        <div className="max-w-lg mx-auto p-6 rounded-md shadow text-white-700">
+        <div className="max-w-lg mx-auto p-6 rounded-md text-white-700">
             <h3 className="text-xl font-semibold mb-4">
                 Mint des Eusko
             </h3>
