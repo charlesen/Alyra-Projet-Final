@@ -10,24 +10,15 @@ import { EUSKO_TOKEN_ADDRESS, EUSKO_ABI } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { useIsAuthorized } from "@/hooks/useIsAuthorized";
 
 export default function Mint() {
     const { address: userAddress, isConnected } = useAccount();
     const { toast } = useToast();
 
     // 1) On vérifier si l'utilisateur est autorisé
-    const {
-        data: isAuthData,
-        isLoading: isAuthLoading,
-        isError: isAuthError,
-    } = useReadContract({
-        address: EUSKO_TOKEN_ADDRESS,
-        abi: EUSKO_ABI,
-        functionName: "isAuthorizedAccount",
-        args: [userAddress || "0x0000000000000000000000000000000000000000"],
-        enabled: !!userAddress,
-    });
-    const isAuthorized = isAuthData || false;
+    const { isAuthorized, isAuthLoading, isAuthError } =
+        useIsAuthorized(userAddress);
 
     // 2) Récupérer l'adresse de la réserve
     const {

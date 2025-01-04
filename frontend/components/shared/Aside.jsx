@@ -11,13 +11,21 @@ import {
     CurrencyDollarIcon,
     Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
+import { EUSKO_ABI, EUSKO_TOKEN_ADDRESS } from "@/constants";
+import { useIsAuthorized } from "@/hooks/useIsAuthorized";
+import { useAccount } from "wagmi";
 
 export default function Aside() {
     const [mode, setMode] = useState("user");
+    const { address: userAddress, isConnected } = useAccount();
 
     const toggleMode = () => {
         setMode((prev) => (prev === "user" ? "operator" : "user"));
     };
+
+    // Vérifier si l'utilisateur est autorisé
+    const { isAuthorized, isAuthLoading, isAuthError } =
+        useIsAuthorized(userAddress);
 
     return (
         <aside className="w-60 text-white flex flex-col border-r border-gray-200">

@@ -2,27 +2,17 @@
 import AddSigner from "@/components/AddSigner";
 import Mint from "@/components/Mint";
 import MintMultiSig from "@/components/MintMultiSig";
+import NotConnected from "@/components/shared/NotConnected";
 import UpdateReserve from "@/components/UpdateReserve";
 import { EUSKO_ABI, EUSKO_TOKEN_ADDRESS } from "@/constants";
+import { useIsAuthorized } from "@/hooks/useIsAuthorized";
 import { useAccount, useReadContract } from "wagmi";
 
 export default function AdminPage() {
   const { address: userAddress, isConnected } = useAccount();
 
-  // Vérifier si l'utilisateur est autorisé
-  const {
-    data: isAuthData,
-    isLoading: isAuthLoading,
-    isError: isAuthError,
-  } = useReadContract({
-    address: EUSKO_TOKEN_ADDRESS,
-    abi: EUSKO_ABI,
-    functionName: "isAuthorizedAccount",
-    args: [userAddress || "0x0000000000000000000000000000000000000000"],
-    enabled: !!userAddress,
-  });
-
-  const isAuthorized = !!isAuthData; // Convertit en booléen
+  const { isAuthorized, isAuthLoading, isAuthError } =
+    useIsAuthorized(userAddress);
 
   // 1) Affichage pendant le chargement
   if (isAuthLoading) {
@@ -42,12 +32,7 @@ export default function AdminPage() {
 
   // 3) Vérification qu'on est connecté
   if (!isConnected) {
-    return (
-      <p className="text-center mt-6 text-red-900">
-        Vous devez connecter votre wallet pour accéder à l'espace
-        administrateur.
-      </p>
-    );
+    return <NotConnected />;
   }
 
   // 4) Vérification qu'on est autorisé

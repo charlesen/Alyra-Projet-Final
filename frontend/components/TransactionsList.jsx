@@ -138,9 +138,7 @@ export default function TransactionsList() {
     // Garde-fou si pas connecté
     if (!isConnected) {
         return (
-            <div className="p-4 text-center text-red-300 bg-gray-800 rounded">
-                Veuillez connecter votre wallet pour voir vos transactions.
-            </div>
+            <></>
         );
     }
 

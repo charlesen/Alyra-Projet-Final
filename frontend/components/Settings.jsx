@@ -7,11 +7,7 @@ export default function Settings() {
     const { address, isConnected } = useAccount();
 
     if (!isConnected) {
-        return (
-            <div className="p-4 text-center text-red-300 bg-gray-800 rounded">
-                Veuillez connecter votre wallet pour accéder à vos paramètres.
-            </div>
-        );
+        return <NotConnected />;
     }
 
     return (

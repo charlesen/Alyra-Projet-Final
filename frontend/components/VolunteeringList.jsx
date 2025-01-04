@@ -10,9 +10,11 @@ import ActCard from "@/components/ActCard";
 
 // Importer le hook personnalisé
 import { useVolunteeringActions } from "@/hooks/useVolunteeringActions";
+import { useIsAuthorized } from "@/hooks/useIsAuthorized";
 
 export default function VolunteeringList() {
-    const { address, isConnected } = useAccount();
+    const { address: userAddress, isConnected } = useAccount();
+
     const { toast } = useToast();
 
     // Vérifier si l'utilisateur est un organisme/approuvé
@@ -24,24 +26,14 @@ export default function VolunteeringList() {
         address: EUSKO_TOKEN_ADDRESS,
         abi: EUSKO_ABI,
         functionName: "isApprovedMerchant",
-        args: [address || "0x0000000000000000000000000000000000000000"],
-        enabled: !!address,
+        args: [userAddress || "0x0000000000000000000000000000000000000000"],
+        enabled: !!userAddress,
     });
     const isMerchant = isMerchantData ?? false;
 
     // Vérifier si l'utilisateur est "authorized"
-    const {
-        data: isAuthorizedData,
-        isLoading: isAuthorizedLoading,
-        isError: isAuthorizedError,
-    } = useReadContract({
-        address: EUSKO_TOKEN_ADDRESS,
-        abi: EUSKO_ABI,
-        functionName: "isAuthorizedAccount",
-        args: [address || "0x0000000000000000000000000000000000000000"],
-        enabled: !!address,
-    });
-    const isAuthorized = isAuthorizedData ?? false;
+    const { isAuthorized, isAuthLoading, isAuthError } =
+        useIsAuthorized(userAddress);
 
     const [acts, setActs] = useState([]);
     const [isLoadingLocal, setIsLoadingLocal] = useState(true);
@@ -112,7 +104,7 @@ export default function VolunteeringList() {
 
     // Hook personnalisé pour obtenir les méthodes d'action
     const actions = useVolunteeringActions({
-        address,
+        userAddress,
         isConnected,
         isMerchant,
         isAuthorized,
@@ -121,12 +113,12 @@ export default function VolunteeringList() {
     });
 
     // Loading states
-    if (isLoadingLocal || isMerchantLoading || isAuthorizedLoading) {
+    if (isLoadingLocal || isMerchantLoading || isAuthLoading) {
         return <p className="text-center mt-4">Chargement en cours...</p>;
     }
 
     // Gestion des erreurs
-    if (isMerchantError || isAuthorizedError) {
+    if (isMerchantError || isAuthError) {
         return (
             <p className="text-center mt-4 text-red-600">
                 Erreur lors de la vérification de vos permissions.

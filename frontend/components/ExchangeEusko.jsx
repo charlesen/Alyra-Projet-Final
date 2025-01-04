@@ -6,6 +6,7 @@ import { parseUnits } from "viem";
 import { EUSKO_TOKEN_ADDRESS, EUSKO_ABI } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import NotConnected from "./shared/NotConnected";
 
 /**
  * @notice Composant pour échanger EURC ↔ EUS.
@@ -121,12 +122,9 @@ export default function ExchangeEusko() {
         }
     };
 
+    // État "non connecté"
     if (!isConnected) {
-        return (
-            <div className="p-4 text-center text-red-100 bg-red-500/20 rounded">
-                Veuillez connecter votre wallet pour échanger.
-            </div>
-        );
+        return <NotConnected />;
     }
 
     return (
