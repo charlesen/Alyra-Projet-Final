@@ -89,7 +89,7 @@ export default function ActCard({ act, actions, isMerchant, isAuthorized }) {
                     <div className="mt-2">
                         <span className="text-xs text-gray-500">Hash:</span>{" "}
                         <a
-                            href={`https://sepolia.etherscan.io/tx/${act.txHash}`}
+                            href={`https://sepolia.etherscan.io/tx/${act.txHash}#eventlog`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 underline"
