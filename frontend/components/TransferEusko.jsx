@@ -83,10 +83,6 @@ export default function TransferEusko() {
     // Affichage principal
     return (
         <div className="max-w-lg w-full mx-auto mt-10 px-6 py-6 bg-white dark:bg-gray-800 rounded shadow">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-                Transfert d'Eusko
-            </h3>
-
             {/* Champ destinataire */}
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
