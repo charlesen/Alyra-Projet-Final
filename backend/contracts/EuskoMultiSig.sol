@@ -16,7 +16,7 @@ contract EuskoMultiSig {
 
     /// @notice Structure d'une transaction en attente
     struct Transaction {
-        address target; // Adresse du contrat (ex. EuskoMultiSig ou Eusko)
+        address target; // Adresse du contrat Eusko
         uint256 value; // Ether envoyé
         bytes data; // Encodage fonction + params (ex: mintWithEURC(...) encodé)
         bool executed; // true quand déjà exécutée
@@ -129,8 +129,6 @@ contract EuskoMultiSig {
         require(!isSigner(newSigner), "Already a signer");
 
         signers.push(newSigner);
-        // Optionnel: on pourrait ajuster la threshold ou la laisser telle quelle
-        // threshold = ??? (ex: threshold + 1 ?)
     }
 
     /**
