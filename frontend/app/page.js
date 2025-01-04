@@ -5,6 +5,7 @@ import NotConnected from "@/components/shared/NotConnected";
 import GuaranteeFundBalance from "@/components/GuaranteeFundBalance";
 import ReserveBalance from "@/components/ReserveBalance";
 import VolunteerPoints from "@/components/VolunteerPoints";
+import TransactionsList from "@/components/TransactionsList";
 
 /**
  * HOME PAGE
@@ -33,6 +34,7 @@ export default function Home() {
             {/* =========================
                 SECTION SOLDE & POINTS
                ========================= */}
+
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               {/* Card Solde Eusko */}
               <div className="rounded-xl bg-[#2f343c] p-6 shadow-md relative overflow-hidden">
@@ -65,6 +67,10 @@ export default function Home() {
             <ReserveBalance />
           </div>
         </section>
+
+        <div>
+          <TransactionsList />
+        </div>
       </main>
     </div>
   );
