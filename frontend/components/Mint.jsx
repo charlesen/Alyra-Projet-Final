@@ -15,7 +15,7 @@ export default function Mint() {
     const { address: userAddress, isConnected } = useAccount();
     const { toast } = useToast();
 
-    // 1) Vérifier si l'utilisateur est autorisé
+    // 1) On vérifier si l'utilisateur est autorisé
     const {
         data: isAuthData,
         isLoading: isAuthLoading,
