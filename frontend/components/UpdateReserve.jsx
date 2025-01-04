@@ -30,7 +30,7 @@ export default function UpdateReserve() {
                 <input
                     type="text"
                     placeholder="Nouvelle adresse de la réserve"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm text-neutral-900"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm text-neutral-900 p-2"
                     value={newAddr}
                     onChange={(e) => setNewAddr(e.target.value)}
                 />

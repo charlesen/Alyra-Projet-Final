@@ -33,11 +33,17 @@ Adresses des Contrats
 
 - Contrat EURC : 0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4
 - Contrat Eusko : 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1
+- Contrat EuskoMultiSig : 0x0B87EAA17DE8a4fc4eE1F7C0A12132E518b6Ed83
 
 ## Vérification du contrat sur Sepolia
 
 ```bash
+# Contrat Eusko
 npx hardhat verify --network sepolia 0xfaC7B9F5d5f142f9cFf65d45921898FB6b7bE2d1 "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4"
+
+# Contrat MultiSig
+
+npx hardhat verify --network sepolia "0x0B87EAA17DE8a4fc4eE1F7C0A12132E518b6Ed83" --constructor-args arguments.js
 ```
 
 ## Mint de nouveaux tokens EUSKO
