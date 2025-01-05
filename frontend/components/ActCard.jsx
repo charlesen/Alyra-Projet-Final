@@ -1,7 +1,7 @@
 
 import React from "react";
 
-export default function ActCard({ act, actions, isMerchant, isAuthorized }) {
+export default function ActCard({ act, actions, isMerchant, isAuthorized, isConnected }) {
     return (
         <div className="flex flex-col bg-white rounded-md shadow p-4 border border-gray-200">
             <h3 className="text-xl font-bold text-indigo-700 mb-2">{act.title}</h3>
@@ -29,13 +29,13 @@ export default function ActCard({ act, actions, isMerchant, isAuthorized }) {
                 {act.status === "new" && !isMerchant && (
                     <button
                         onClick={() => actions.handleApply(act)}
-                        className={`inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${isAuthorized
+                        className={`inline-block px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${isConnected
                             ? "bg-indigo-600 hover:bg-indigo-500"
                             : "bg-gray-400 cursor-not-allowed"
                             }`}
-                        disabled={!isAuthorized}
+                        disabled={!isConnected}
                     >
-                        {isAuthorized ? "Postuler" : "Connectez votre wallet"}
+                        {isConnected ? "Postuler" : "Connectez votre wallet"}
                     </button>
                 )}
 

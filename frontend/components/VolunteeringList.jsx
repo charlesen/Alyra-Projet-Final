@@ -93,11 +93,11 @@ export default function VolunteeringList() {
             }
             else if (isMerchant) {
                 // Pour les Organismes : afficher les actes qu'ils ont publiés avec le statut correspondant
-                return act.status === activeTab && act.organism.toLowerCase() === address.toLowerCase();
+                return act.status === activeTab && act.organism.toLowerCase() === userAddress.toLowerCase();
             }
             else {
                 // Pour les Bénévoles : afficher les actes qui leur sont assignés avec le statut correspondant
-                return act.status === activeTab && act.volunteer.toLowerCase() === address.toLowerCase();
+                return act.status === activeTab && act.volunteer.toLowerCase() === userAddress.toLowerCase();
             }
         }
     });
@@ -156,6 +156,7 @@ export default function VolunteeringList() {
                             actions={actions}
                             isMerchant={isMerchant}
                             isAuthorized={isAuthorized}
+                            isConnected={isConnected}
                         />
                     ))}
                 </div>

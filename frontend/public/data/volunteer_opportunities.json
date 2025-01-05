@@ -25,7 +25,7 @@
   },
   {
     "id": 3,
-    "status": "new",
+    "status": "inProgress",
     "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
     "volunteer": "",
     "reward": 10,
