@@ -19,6 +19,8 @@ export const handleApply = async (
     return;
   }
 
+  debugger;
+
   try {
     const response = await fetch("/api/volunteering", {
       method: "PUT",

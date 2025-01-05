@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { parseAbiItem } from "viem";
 import { publicClient } from "@/lib/client";
@@ -17,7 +17,7 @@ export default function TransactionsList() {
      * Récupère tous les événements Transfer, Mint, Spent, etc.
      * puis ne garde que ceux qui concernent l’utilisateur connecté.
      */
-    const fetchAllEvents = async () => {
+    const fetchAllEvents = useCallback(async () => {
         setIsFetchingEvents(true);
         try {
             // 1) Parse ABI items pour chaque event
@@ -121,14 +121,14 @@ export default function TransactionsList() {
         } finally {
             setIsFetchingEvents(false);
         }
-    };
+    }, [EUSKO_TOKEN_ADDRESS, publicClient, userAddress]);
 
     // Fetch au montage si connecté
     useEffect(() => {
         if (isConnected) {
             fetchAllEvents();
         }
-    }, [isConnected]);
+    }, [isConnected, fetchAllEvents]);
 
     // Handler pour rafraîchir manuellement
     const handleRefresh = async () => {

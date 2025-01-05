@@ -2,6 +2,7 @@
 
 import { useAccount } from "wagmi";
 import QRCode from "react-qr-code";
+import NotConnected from "./shared/NotConnected";
 
 export default function Settings() {
     const { address, isConnected } = useAccount();

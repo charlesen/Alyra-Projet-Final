@@ -13,7 +13,7 @@ import { useVolunteeringActions } from "@/hooks/useVolunteeringActions";
 import { useIsAuthorized } from "@/hooks/useIsAuthorized";
 
 export default function VolunteeringList() {
-    const { address: userAddress, isConnected } = useAccount();
+    const { address, isConnected } = useAccount();
 
     const { toast } = useToast();
 
@@ -26,14 +26,14 @@ export default function VolunteeringList() {
         address: EUSKO_TOKEN_ADDRESS,
         abi: EUSKO_ABI,
         functionName: "isApprovedMerchant",
-        args: [userAddress || "0x0000000000000000000000000000000000000000"],
-        enabled: !!userAddress,
+        args: [address || "0x0000000000000000000000000000000000000000"],
+        enabled: !!address,
     });
     const isMerchant = isMerchantData ?? false;
 
     // Vérifier si l'utilisateur est "authorized"
     const { isAuthorized, isAuthLoading, isAuthError } =
-        useIsAuthorized(userAddress);
+        useIsAuthorized(address);
 
     const [acts, setActs] = useState([]);
     const [isLoadingLocal, setIsLoadingLocal] = useState(true);
@@ -93,18 +93,18 @@ export default function VolunteeringList() {
             }
             else if (isMerchant) {
                 // Pour les Organismes : afficher les actes qu'ils ont publiés avec le statut correspondant
-                return act.status === activeTab && act.organism.toLowerCase() === userAddress.toLowerCase();
+                return act.status === activeTab && act.organism.toLowerCase() === address.toLowerCase();
             }
             else {
                 // Pour les Bénévoles : afficher les actes qui leur sont assignés avec le statut correspondant
-                return act.status === activeTab && act.volunteer.toLowerCase() === userAddress.toLowerCase();
+                return act.status === activeTab && act.volunteer.toLowerCase() === address.toLowerCase();
             }
         }
     });
 
     // Hook personnalisé pour obtenir les méthodes d'action
     const actions = useVolunteeringActions({
-        userAddress,
+        address,
         isConnected,
         isMerchant,
         isAuthorized,

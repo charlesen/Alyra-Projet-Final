@@ -84,7 +84,7 @@ export default function MintMultiSig() {
         console.log("Done looping => results:", results);
         setTransactions(results);
         setIsLoadingTxList(false);
-    }, []);
+    }, [publicClient]);
 
 
     useEffect(() => {

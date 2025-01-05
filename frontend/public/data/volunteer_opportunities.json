@@ -25,9 +25,9 @@
   },
   {
     "id": 3,
-    "status": "inProgress",
+    "status": "new",
     "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
-    "volunteer": "",
+    "volunteer": "0x871c0626DE3CA1303c5cC9CeC879BA9681bF973A",
     "reward": 10,
     "title": "Soutien scolaire",
     "location": "Centre social B",
@@ -36,7 +36,7 @@
   },
   {
     "id": 4,
-    "status": "validated",
+    "status": "new",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 5,
@@ -47,7 +47,7 @@
   },
   {
     "id": 5,
-    "status": "validated",
+    "status": "new",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 5,
@@ -58,7 +58,7 @@
   },
   {
     "id": 6,
-    "status": "inProgress",
+    "status": "new",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 10,
@@ -69,7 +69,7 @@
   },
   {
     "id": 7,
-    "status": "inProgress",
+    "status": "new",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 5,
@@ -80,7 +80,7 @@
   },
   {
     "id": 8,
-    "status": "inProgress",
+    "status": "new",
     "organism": "0x3285C33eF9CBE9a1E6A5De573c3644DCd0B1CfE9",
     "volunteer": "",
     "reward": 5,
