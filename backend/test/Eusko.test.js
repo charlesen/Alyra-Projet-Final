@@ -12,8 +12,15 @@ describe("Eusko", function () {
    */
   async function deployEuskoFixture() {
     // const [owner, merchant, user] = await hre.ethers.getSigners();
-    const [owner, merchant, user, volunteer1, volunteer2] =
-      await hre.ethers.getSigners();
+    const [
+      owner,
+      merchant,
+      user,
+      volunteer1,
+      volunteer2,
+      organism1,
+      organism2,
+    ] = await hre.ethers.getSigners();
 
     // Déployer EurcMock avec une offre initiale
     // const initialEurcSupply = hre.ethers.parseUnits("1000000", 6);
@@ -23,7 +30,17 @@ describe("Eusko", function () {
     const eusko = await hre.ethers.deployContract("Eusko", [eurcToken.target]);
 
     // return { eusko, eurcToken, owner, merchant, user };
-    return { eusko, eurcToken, owner, merchant, user, volunteer1, volunteer2 };
+    return {
+      eusko,
+      eurcToken,
+      owner,
+      merchant,
+      user,
+      volunteer1,
+      volunteer2,
+      organism1,
+      organism2,
+    };
   }
 
   describe("Deployment", function () {
@@ -93,74 +110,105 @@ describe("Eusko", function () {
 
   describe("Volunteer Acts", function () {
     it("Should register a volunteer act and reward Eusko", async function () {
-      const { eusko, volunteer1 } = await loadFixture(deployEuskoFixture);
-      const description = "Helped at the community center";
-      const reward = hre.ethers.parseUnits("50", 6); // 50 Eusko
+      const { eusko, eurcToken, owner, volunteer1, organism1 } =
+        await loadFixture(deployEuskoFixture);
 
-      // Effectuer la transaction
-      const tx = await eusko.registerAct(
+      // 1) Autoriser l'owner ou un compte X à appeler registerAct
+      //    (Dans votre contrat, l'owner est déjà autorisé, donc c'est bon si c'est lui qui appelle.)
+
+      // 2) Créditer la réserve
+      const mintedForReserve = ethers.parseUnits("100", 6);
+      await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
+      await eusko
+        .connect(owner)
+        .mintWithEURC(await eusko.reserve(), mintedForReserve);
+
+      // 3) Appeler registerAct
+      const description = "Helped at center";
+      const reward = ethers.parseUnits("50", 6);
+
+      const tx = await eusko.connect(owner).registerAct(
         volunteer1.address,
+        organism1.address, // Optionnel si vous tenez à un "organism"
         description,
         reward
       );
 
-      // Récupérer le bloc dans lequel la transaction a été incluse
+      // 4) Vérifier event et soldes
       const receipt = await tx.wait();
-      const block = await hre.ethers.provider.getBlock(receipt.blockNumber);
+      const block = await ethers.provider.getBlock(receipt.blockNumber);
       const timestamp = block.timestamp;
 
-      // Vérifier l'événement émis
       await expect(tx)
         .to.emit(eusko, "VolunteerActRegistered")
-        .withArgs(volunteer1.address, description, reward, timestamp);
+        .withArgs(
+          volunteer1.address,
+          organism1.address,
+          description,
+          reward,
+          timestamp
+        );
 
-      // Vérifier les actes enregistrés
-      const acts = await eusko.getActs(volunteer1.address);
-      expect(acts.length).to.equal(1);
-      expect(acts[0].description).to.equal(description);
-      expect(acts[0].reward).to.equal(reward);
+      // Le bénévole volunteer1 doit avoir reçu 50 EUS
+      expect(await eusko.balanceOf(volunteer1.address)).to.equal(reward);
 
-      // Vérifier le solde du bénévole
-      const balance = await eusko.balanceOf(volunteer1.address);
-      expect(balance).to.equal(reward);
+      // Le reserve a été débité de 50
+      const reserveBalance = await eusko.balanceOf(await eusko.reserve());
+      expect(reserveBalance).to.equal(mintedForReserve - reward);
     });
 
     it("Should retrieve acts correctly for multiple volunteers", async function () {
-      const { eusko, volunteer1, volunteer2 } = await loadFixture(
-        deployEuskoFixture
-      );
+      const {
+        eusko,
+        eurcToken,
+        owner,
+        volunteer1,
+        volunteer2,
+        organism1,
+        organism2,
+      } = await loadFixture(deployEuskoFixture);
+
+      const mintedForReserve = ethers.parseUnits("200", 6);
+      await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
+      await eusko
+        .connect(owner)
+        .mintWithEURC(await eusko.reserve(), mintedForReserve);
 
       await eusko.registerAct(
         volunteer1.address,
+        organism1.address,
         "Act 1",
         hre.ethers.parseUnits("20", 6)
       );
       await eusko.registerAct(
         volunteer1.address,
+        organism1.address,
         "Act 2",
         hre.ethers.parseUnits("30", 6)
       );
       await eusko.registerAct(
         volunteer2.address,
+        organism2.address,
         "Act 3",
         hre.ethers.parseUnits("40", 6)
       );
 
-      const acts1 = await eusko.getActs(volunteer1.address);
+      const acts1 = await eusko.getActsByVolunteer(volunteer1.address);
       expect(acts1.length).to.equal(2);
       expect(acts1[0].description).to.equal("Act 1");
       expect(acts1[1].description).to.equal("Act 2");
 
-      const acts2 = await eusko.getActs(volunteer2.address);
+      const acts2 = await eusko.getActsByVolunteer(volunteer2.address);
       expect(acts2.length).to.equal(1);
       expect(acts2[0].description).to.equal("Act 3");
     });
 
     it("Should revert if registering an act with invalid address", async function () {
-      const { eusko } = await loadFixture(deployEuskoFixture);
+      const { eusko, organism1 } = await loadFixture(deployEuskoFixture);
       await expect(
         eusko.registerAct(
           hre.ethers.ZeroAddress,
+          organism1.address,
           "Invalid Act",
           hre.ethers.parseUnits("50", 6)
         )
@@ -168,9 +216,11 @@ describe("Eusko", function () {
     });
 
     it("Should revert if registering an act with zero reward", async function () {
-      const { eusko, volunteer1 } = await loadFixture(deployEuskoFixture);
+      const { eusko, volunteer1, organism1 } = await loadFixture(
+        deployEuskoFixture
+      );
       await expect(
-        eusko.registerAct(volunteer1.address, "No reward", 0)
+        eusko.registerAct(volunteer1.address, organism1.address, "No reward", 0)
       ).to.be.revertedWith("Reward must be greater than zero");
     });
   });
