@@ -111,6 +111,61 @@ describe("Eusko", function () {
     });
   });
 
+  describe("updateReserve", function () {
+    it("Should update the reserve address and emit an event", async function () {
+      const { eusko, owner, user } = await loadFixture(deployEuskoFixture);
+
+      const oldReserve = await eusko.reserve();
+      const newReserve = user.address;
+
+      // Appeler updateReserve
+      await expect(eusko.connect(owner).updateReserve(newReserve))
+        .to.emit(eusko, "ReserveUpdated")
+        .withArgs(oldReserve, newReserve);
+
+      // Vérifier que la réserve a été mise à jour
+      const updatedReserve = await eusko.reserve();
+      expect(updatedReserve).to.equal(newReserve);
+    });
+
+    it("Should revert if new reserve address is zero", async function () {
+      const { eusko, owner } = await loadFixture(deployEuskoFixture);
+
+      // Essayer de mettre à jour avec une adresse zéro
+      await expect(
+        eusko.connect(owner).updateReserve(hre.ethers.ZeroAddress)
+      ).to.be.revertedWith("Invalid new reserve address");
+    });
+
+    it("Should revert if called by a non-authorized account", async function () {
+      const { eusko, user } = await loadFixture(deployEuskoFixture);
+
+      // Essayer de mettre à jour la réserve avec un compte non autorisé
+      await expect(
+        eusko.connect(user).updateReserve(user.address)
+      ).to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should allow authorized accounts to update the reserve", async function () {
+      const { eusko, owner, user } = await loadFixture(deployEuskoFixture);
+
+      // Ajouter un compte autorisé
+      await eusko.connect(owner).addAuthorizedAccount(user.address);
+
+      const oldReserve = await eusko.reserve();
+      const newReserve = user.address;
+
+      // Mettre à jour la réserve avec un compte autorisé
+      await expect(eusko.connect(user).updateReserve(newReserve))
+        .to.emit(eusko, "ReserveUpdated")
+        .withArgs(oldReserve, newReserve);
+
+      // Vérifier que la réserve a été mise à jour
+      const updatedReserve = await eusko.reserve();
+      expect(updatedReserve).to.equal(newReserve);
+    });
+  });
+
   describe("Volunteer Acts", function () {
     it("Should register a volunteer act and reward Eusko", async function () {
       const { eusko, eurcToken, owner, volunteer1, organism1 } =
