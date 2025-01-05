@@ -370,10 +370,8 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
 
         for (uint256 i = 0; i < acts.length; i++) {
             if (currentTime - acts[i].timestamp > 365 days) {
-                // Accumule la récompense à révoquer
                 totalToRevoke += acts[i].reward;
 
-                // Émission de l'événement
                 emit ExpiredActRemoved(
                     _volunteer,
                     acts[i].description,
@@ -384,7 +382,10 @@ contract Eusko is ERC20, Authorizable, ReentrancyGuard {
                 // Supprime l'acte expiré
                 acts[i] = acts[acts.length - 1]; // Remplace par le dernier acte
                 acts.pop(); // Réduction de la taille du tableau
-                i--; // Reduction de l'index pour évaluer le nouvel élément
+
+                if (i > 0) {
+                    i--; // Réduction de l'index pour évaluer le nouvel élément
+                }
             }
         }
 

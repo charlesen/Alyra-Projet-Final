@@ -1,7 +1,8 @@
-// test/Eusko.test.js
-
 require("@nomicfoundation/hardhat-toolbox");
-const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+const {
+  loadFixture,
+  time,
+} = require("@nomicfoundation/hardhat-network-helpers");
 const hre = require("hardhat");
 const { expect } = require("chai");
 
@@ -127,12 +128,14 @@ describe("Eusko", function () {
       const description = "Helped at center";
       const reward = ethers.parseUnits("50", 6);
 
-      const tx = await eusko.connect(owner).registerAct(
-        volunteer1.address,
-        organism1.address, // Optionnel si vous tenez à un "organism"
-        description,
-        reward
-      );
+      const tx = await eusko
+        .connect(owner)
+        .registerAct(
+          volunteer1.address,
+          organism1.address,
+          description,
+          reward
+        );
 
       // 4) Vérifier event et soldes
       const receipt = await tx.wait();
@@ -525,6 +528,140 @@ describe("Eusko", function () {
 
       await eusko.connect(owner).addAuthorizedAccount(user.address);
       expect(await eusko.isAuthorizedAccount(user.address)).to.be.true;
+    });
+  });
+
+  describe("removeExpiredActs", function () {
+    // it("Should remove expired acts and transfer revoked rewards to reserve", async function () {
+    //   const { eusko, eurcToken, owner, volunteer1, organism1 } =
+    //     await loadFixture(deployEuskoFixture);
+
+    //   // Fund the reserve
+    //   const mintedForReserve = hre.ethers.parseUnits("100", 6);
+    //   await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
+    //   await eusko
+    //     .connect(owner)
+    //     .mintWithEURC(await eusko.reserve(), mintedForReserve);
+
+    //   // Add acts for the volunteer
+    //   const reward1 = hre.ethers.parseUnits("50", 6);
+    //   const reward2 = hre.ethers.parseUnits("30", 6);
+
+    //   await eusko
+    //     .connect(owner)
+    //     .registerAct(volunteer1.address, organism1.address, "Act 1", reward1);
+    //   await eusko
+    //     .connect(owner)
+    //     .registerAct(volunteer1.address, organism1.address, "Act 2", reward2);
+
+    //   // Simulate time passing so that the first act expires
+    //   await time.increase(365 * 24 * 60 * 60 + 1); // 1 year + 1 second
+
+    //   // Call removeExpiredActs
+    //   const tx = await eusko
+    //     .connect(owner)
+    //     .removeExpiredActs(volunteer1.address);
+    //   const receipt = await tx.wait();
+
+    //   // Log events for debugging
+    //   console.log(receipt.events);
+
+    //   // Ensure the receipt contains events
+    //   expect(receipt.events, "Transaction receipt does not contain events").to
+    //     .not.be.undefined;
+
+    //   // Find the ExpiredActRemoved event
+    //   const event = receipt.events.find((e) => e.event === "ExpiredActRemoved");
+    //   expect(event, "ExpiredActRemoved event not found").to.not.be.undefined;
+
+    //   // Verify event arguments
+    //   const emittedDescription = event.args.description;
+    //   const emittedReward = event.args.reward;
+
+    //   expect(emittedDescription).to.equal("Act 1");
+    //   expect(emittedReward).to.equal(reward1);
+
+    //   // Verify balances
+    //   const finalVolunteerBalance = await eusko.balanceOf(volunteer1.address);
+    //   const finalReserveBalance = await eusko.balanceOf(await eusko.reserve());
+
+    //   expect(finalVolunteerBalance).to.equal(reward2); // Only the non-expired act's reward remains
+    //   expect(finalReserveBalance).to.equal(mintedForReserve + reward2);
+    // });
+
+    it("Should do nothing if no acts are expired", async function () {
+      const { eusko, eurcToken, owner, volunteer1, organism1 } =
+        await loadFixture(deployEuskoFixture);
+
+      const mintedForReserve = hre.ethers.parseUnits("100", 6);
+      await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
+      await eusko
+        .connect(owner)
+        .mintWithEURC(await eusko.reserve(), mintedForReserve);
+
+      // Ajouter des actes pour le bénévole
+      const reward = hre.ethers.parseUnits("50", 6);
+      await eusko
+        .connect(owner)
+        .registerAct(volunteer1.address, organism1.address, "Act 1", reward);
+
+      // Appeler removeExpiredActs sans attendre 1 an
+      await expect(
+        eusko.connect(owner).removeExpiredActs(volunteer1.address)
+      ).to.not.emit(eusko, "ExpiredActRemoved");
+
+      // Vérifier que le solde du bénévole est inchangé
+      const volunteerBalance = await eusko.balanceOf(volunteer1.address);
+      expect(volunteerBalance).to.equal(reward);
+    });
+
+    it("Should revert if called by a non-authorized account", async function () {
+      const { eusko, volunteer1, user } = await loadFixture(deployEuskoFixture);
+
+      await expect(
+        eusko.connect(user).removeExpiredActs(volunteer1.address)
+      ).to.be.revertedWithCustomError(eusko, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should handle partial expiration of acts", async function () {
+      const { eusko, eurcToken, volunteer1, organism1, owner, reserve } =
+        await loadFixture(deployEuskoFixture);
+
+      // Approvisionner la réserve
+      const mintedForReserve = hre.ethers.parseUnits("100", 6);
+      await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
+      await eusko
+        .connect(owner)
+        .mintWithEURC(await eusko.reserve(), mintedForReserve);
+
+      // Ajouter des actes pour le bénévole
+      await eusko
+        .connect(owner)
+        .registerAct(
+          volunteer1.address,
+          organism1.address,
+          "Act 1",
+          hre.ethers.parseUnits("50", 6)
+        );
+      await eusko
+        .connect(owner)
+        .registerAct(
+          volunteer1.address,
+          organism1.address,
+          "Act 2",
+          hre.ethers.parseUnits("30", 6)
+        );
+
+      // Simuler le passage du temps pour qu'un acte expire
+      await time.increase(365 * 24 * 60 * 60 + 1); // 1 an + 1 seconde
+
+      // Appeler removeExpiredActs
+      await eusko.connect(owner).removeExpiredActs(volunteer1.address);
+
+      // Vérifier les actes restants
+      const acts = await eusko.getActsByVolunteer(volunteer1.address);
+      expect(acts.length).to.equal(1);
+      expect(acts[0].description).to.equal("Act 2");
     });
   });
 });
