@@ -113,23 +113,30 @@ npx hardhat coverage
 
 Recipient : Adresse du bénéficiaire.
 Amount : Montant en EURC.
-Testing
+
+## Testing
 
 1. Tests backend
    Tous les tests des contrats intelligents sont réalisés avec Hardhat et Chai. Les fonctionnalités testées incluent :
 
-Mint et redeem des tokens Eusko.
-Gestion des actes de bénévolat.
-Interaction avec les commerçants approuvés.
-Tests des conditions de sécurité (reentrancy, overflows, etc.).
+- Mint et redeem des tokens Eusko.
+- Gestion des actes de bénévolat.
+- Interaction avec les commerçants approuvés.
+- Tests des conditions de sécurité (reentrancy, overflows, etc.).
+
 Exécution des tests :
 
-bash
-Copier le code
-npx hardhat test 2. Tests frontend
+```bash
+npx hardhat test
+```
+
+2. Tests frontend
+
 Les tests frontend valident les interactions avec les contrats et l’UX de l’application via des simulations manuelles (Metamask, wagmi).
 
 Notes importantes
 Les tokens EURC et Eusko utilisent 6 décimales. Assurez-vous d'utiliser le format approprié (par exemple, 30000000 pour 30 EURC).
+
 Actuellement, le projet est déployé sur Sepolia Testnet. En production, envisagez des blockchains avec des frais de gaz réduits (Polygon, BSC, etc.).
+
 Proxy non implémenté dans cette version : toute mise à jour nécessitera un redéploiement complet.
