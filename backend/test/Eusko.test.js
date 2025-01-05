@@ -6,6 +6,8 @@ const {
 const hre = require("hardhat");
 const { expect } = require("chai");
 
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
+
 describe("Eusko", function () {
   /**
    * Déploie les contrats Eusko et EurcMock, et retourne les instances ainsi que les signers.
@@ -532,62 +534,48 @@ describe("Eusko", function () {
   });
 
   describe("removeExpiredActs", function () {
-    // it("Should remove expired acts and transfer revoked rewards to reserve", async function () {
-    //   const { eusko, eurcToken, owner, volunteer1, organism1 } =
-    //     await loadFixture(deployEuskoFixture);
+    it("Should remove expired acts and transfer revoked rewards to reserve", async function () {
+      const { eusko, eurcToken, owner, volunteer1, organism1 } =
+        await loadFixture(deployEuskoFixture);
 
-    //   // Fund the reserve
-    //   const mintedForReserve = hre.ethers.parseUnits("100", 6);
-    //   await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
-    //   await eusko
-    //     .connect(owner)
-    //     .mintWithEURC(await eusko.reserve(), mintedForReserve);
+      // Approvisionne la réserve
+      const mintedForReserve = hre.ethers.parseUnits("100", 6);
+      await eurcToken.connect(owner).approve(eusko.target, mintedForReserve);
+      await eusko
+        .connect(owner)
+        .mintWithEURC(await eusko.reserve(), mintedForReserve);
 
-    //   // Add acts for the volunteer
-    //   const reward1 = hre.ethers.parseUnits("50", 6);
-    //   const reward2 = hre.ethers.parseUnits("30", 6);
+      // Ajout d'actes pour le bénévole
+      const reward1 = hre.ethers.parseUnits("50", 6);
+      const reward2 = hre.ethers.parseUnits("30", 6);
 
-    //   await eusko
-    //     .connect(owner)
-    //     .registerAct(volunteer1.address, organism1.address, "Act 1", reward1);
-    //   await eusko
-    //     .connect(owner)
-    //     .registerAct(volunteer1.address, organism1.address, "Act 2", reward2);
+      await eusko
+        .connect(owner)
+        .registerAct(volunteer1.address, organism1.address, "Act 1", reward1);
+      await eusko
+        .connect(owner)
+        .registerAct(volunteer1.address, organism1.address, "Act 2", reward2);
 
-    //   // Simulate time passing so that the first act expires
-    //   await time.increase(365 * 24 * 60 * 60 + 1); // 1 year + 1 second
+      // Simuler le passage du temps pour qu'un acte expire
+      await time.increase(365 * 24 * 60 * 60 + 1); // 1 an + 1 seconde
 
-    //   // Call removeExpiredActs
-    //   const tx = await eusko
-    //     .connect(owner)
-    //     .removeExpiredActs(volunteer1.address);
-    //   const receipt = await tx.wait();
+      // Appeler removeExpiredActs et vérifier l'émission de l'événement
+      await expect(eusko.connect(owner).removeExpiredActs(volunteer1.address))
+        .to.emit(eusko, "ExpiredActRemoved")
+        .withArgs(
+          volunteer1.address, // Adresse du bénévole
+          "Act 1", // Description de l'acte
+          reward1, // Récompense associée
+          anyValue // Accepte n'importe quel timestamp
+        );
 
-    //   // Log events for debugging
-    //   console.log(receipt.events);
+      // Vérifier les soldes après suppression
+      const finalVolunteerBalance = await eusko.balanceOf(volunteer1.address);
+      const finalReserveBalance = await eusko.balanceOf(await eusko.reserve());
 
-    //   // Ensure the receipt contains events
-    //   expect(receipt.events, "Transaction receipt does not contain events").to
-    //     .not.be.undefined;
-
-    //   // Find the ExpiredActRemoved event
-    //   const event = receipt.events.find((e) => e.event === "ExpiredActRemoved");
-    //   expect(event, "ExpiredActRemoved event not found").to.not.be.undefined;
-
-    //   // Verify event arguments
-    //   const emittedDescription = event.args.description;
-    //   const emittedReward = event.args.reward;
-
-    //   expect(emittedDescription).to.equal("Act 1");
-    //   expect(emittedReward).to.equal(reward1);
-
-    //   // Verify balances
-    //   const finalVolunteerBalance = await eusko.balanceOf(volunteer1.address);
-    //   const finalReserveBalance = await eusko.balanceOf(await eusko.reserve());
-
-    //   expect(finalVolunteerBalance).to.equal(reward2); // Only the non-expired act's reward remains
-    //   expect(finalReserveBalance).to.equal(mintedForReserve + reward2);
-    // });
+      expect(finalVolunteerBalance).to.equal(reward2);
+      expect(finalReserveBalance).to.equal(mintedForReserve - reward2);
+    });
 
     it("Should do nothing if no acts are expired", async function () {
       const { eusko, eurcToken, owner, volunteer1, organism1 } =
