@@ -25,9 +25,9 @@
   },
   {
     "id": 3,
-    "status": "new",
+    "status": "registeredOnChain",
     "organism": "0xB8468f08e283A4cEF719750b08223f7687Effa32",
-    "volunteer": "0x871c0626DE3CA1303c5cC9CeC879BA9681bF973A",
+    "volunteer": "0xA06abE59310Be8Bf98d2a84258dEBba5A092e94c",
     "reward": 10,
     "title": "Soutien scolaire",
     "location": "Centre social B",
